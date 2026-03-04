@@ -1,6 +1,7 @@
 // @clawdia/core — The kernel of the Clawdia Framework
 
 export { InMemoryBus } from "./bus/clawbus.js";
+export { NatsBus } from "./bus/nats-bus.js";
 export type { IClawBus, PublishOptions } from "./bus/clawbus.js";
 
 export { IdentityRuntime } from "./identity/identity-runtime.js";

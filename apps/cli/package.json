@@ -1,1 +1,25 @@
-{"name":"@clawdia/cli","version":"0.1.0","bin":{"clawdia":"./dist/index.js"},"scripts":{"build":"tsc"},"dependencies":{"@clawdia/core":"workspace:*","@clawdia/orchestrator":"workspace:*","@clawdia/types":"workspace:*","commander":"^12.1.0","chalk":"^5.3.0","yaml":"^2.5.0"},"license":"MIT"}
+{
+  "name": "@clawdia/cli",
+  "version": "0.1.0",
+  "bin": {
+    "clawdia": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/types": "workspace:*",
+    "@clawdia/plugin-runtime-docker": "workspace:*",
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

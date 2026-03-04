@@ -1,1 +1,26 @@
-{"name":"@clawdia/plugin-runtime-docker","version":"0.1.0","main":"./dist/index.js","scripts":{"build":"tsc"},"dependencies":{"@clawdia/types":"workspace:*"},"license":"MIT"}
+{
+  "name": "@clawdia/plugin-runtime-docker",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*",
+    "dockerode": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^3.3.0",
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}
