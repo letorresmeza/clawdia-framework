@@ -1,0 +1,1 @@
+{"name":"@clawdia/plugin-agent-claude","version":"0.1.0","main":"./dist/index.js","scripts":{"build":"tsc"},"dependencies":{"@clawdia/types":"workspace:*"},"license":"MIT"}

@@ -1,0 +1,53 @@
+# clawdia.yaml — Framework configuration
+
+port: 3000
+
+nats:
+  url: nats://localhost:4222
+  jetstream: true
+
+database:
+  url: postgres://clawdia:clawdia-dev@localhost:5432/clawdia
+
+defaults:
+  runtime: docker
+  agent: claude-code
+  notifier: slack
+  storage: postgres
+
+pluginsDir: ./plugins
+
+risk:
+  defaultBudget:
+    maxComputeMs: 300000    # 5 minutes
+    maxApiCalls: 1000
+    maxSpendUsd: 10
+  circuitBreaker:
+    failureThreshold: 3
+    resetTimeoutMs: 60000   # 1 minute
+
+registry:
+  healthCheckIntervalMs: 30000    # 30 seconds
+  deregisterAfterMs: 120000       # 2 minutes
+
+economy:
+  transactionFeePercent: 3
+  settlement:
+    chain: base-sepolia
+    escrowContract: ""
+    supportedTokens:
+      - USDC
+      - USDT
+
+reactions:
+  agent-died:
+    auto: true
+    action: restart
+    retries: 2
+  budget-exceeded:
+    auto: true
+    action: throttle
+    escalateAfter: 5m
+  circuit-breaker-open:
+    auto: false
+    action: notify
