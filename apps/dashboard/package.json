@@ -1,1 +1,38 @@
-{"name":"@clawdia/dashboard","version":"0.1.0","private":true,"scripts":{"dev":"echo TODO"},"license":"MIT"}
+{
+  "name": "@clawdia/dashboard",
+  "version": "0.1.0",
+  "description": "Next.js monitoring dashboard for the Clawdia Framework — live views of agents, contracts, and economy",
+  "keywords": ["clawdia", "dashboard", "agent", "monitoring", "nextjs"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "apps/dashboard"
+  },
+  "private": true,
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "next build",
+    "start": "NODE_ENV=production tsx server.ts"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/economy": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/types": "workspace:*",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@types/ws": "^8.5.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

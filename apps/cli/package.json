@@ -1,6 +1,15 @@
 {
   "name": "@clawdia/cli",
   "version": "0.1.0",
+  "description": "Command-line interface for the Clawdia Framework — publish, search, hire, spawn, and manage agents",
+  "keywords": ["clawdia", "cli", "agent", "multi-agent", "autonomous", "ai"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
   "bin": {
     "clawdia": "./dist/index.js"
   },
@@ -12,6 +21,7 @@
   "dependencies": {
     "@clawdia/core": "workspace:*",
     "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/economy": "workspace:*",
     "@clawdia/types": "workspace:*",
     "@clawdia/plugin-runtime-docker": "workspace:*",
     "commander": "^12.1.0",

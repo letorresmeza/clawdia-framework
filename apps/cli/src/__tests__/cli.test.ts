@@ -10,6 +10,10 @@ import { registerSpawnCommand } from "../commands/spawn.js";
 import { registerStatusCommand } from "../commands/status.js";
 import { registerSendCommand } from "../commands/send.js";
 import { registerRegistryCommand } from "../commands/registry.js";
+import { registerPublishCommand } from "../commands/publish.js";
+import { registerSearchCommand } from "../commands/search.js";
+import { registerHireCommand } from "../commands/hire.js";
+import { ContractEngine } from "@clawdia/core";
 import type { AgentIdentity, ClawMessage } from "@clawdia/types";
 
 // ─────────────────────────────────────────────────────────
@@ -83,6 +87,7 @@ interface TestContext {
   identityRuntime: IdentityRuntime;
   registry: ServiceRegistry;
   spawner: AgentSpawner;
+  contracts: ContractEngine;
   program: Command;
   tmpDir: string;
   logs: string[];
@@ -101,6 +106,8 @@ function setupTestContext(): TestContext {
     heartbeatIntervalMs: 2_147_483_647,
   });
 
+  const contracts = new ContractEngine(bus);
+
   const program = new Command();
   program.name("clawdia").exitOverride();
 
@@ -108,13 +115,16 @@ function setupTestContext(): TestContext {
   registerStatusCommand(program, { spawner, registry });
   registerSendCommand(program, { bus, spawner });
   registerRegistryCommand(program, { registry });
+  registerPublishCommand(program, { identityRuntime, registry });
+  registerSearchCommand(program, { registry });
+  registerHireCommand(program, { bus, registry, contracts });
 
   const tmpDir = mkdtempSync(join(tmpdir(), "clawdia-test-"));
 
   const logs: string[] = [];
   const errors: string[] = [];
 
-  return { bus, identityRuntime, registry, spawner, program, tmpDir, logs, errors };
+  return { bus, identityRuntime, registry, spawner, contracts, program, tmpDir, logs, errors };
 }
 
 async function run(ctx: TestContext, args: string[]): Promise<void> {
@@ -470,6 +480,193 @@ describe("CLI", () => {
       await run(ctx, ["registry", "deregister", "nonexistent"]);
       const output = ctx.errors.join("\n");
       expect(output).toContain("not found");
+    });
+  });
+
+  // ─── publish command ───
+
+  describe("publish", () => {
+    it("validates and registers an agent in the registry", async () => {
+      const soulPath = writeSoulFile(ctx, SOUL_MD);
+      await run(ctx, ["publish", soulPath]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("Published:");
+      expect(output).toContain("test-agent");
+      expect(output).toContain("testing.unit");
+      expect(ctx.registry.get("test-agent")).toBeDefined();
+    });
+
+    it("--dry-run validates without registering", async () => {
+      const soulPath = writeSoulFile(ctx, SOUL_MD);
+      await run(ctx, ["publish", soulPath, "--dry-run"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("dry run");
+      // Should NOT be in registry
+      expect(ctx.registry.get("test-agent")).toBeUndefined();
+    });
+
+    it("prints capability pricing", async () => {
+      const soulPath = writeSoulFile(ctx, SOUL_MD);
+      await run(ctx, ["publish", soulPath]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("0.1 USDC");
+    });
+
+    it("errors on missing file", async () => {
+      await run(ctx, ["publish", "/tmp/does-not-exist.md"]);
+      expect(ctx.errors.join("\n")).toContain("Error:");
+    });
+
+    it("errors on invalid soul.md", async () => {
+      const soulPath = writeSoulFile(ctx, "bad: [yaml");
+      await run(ctx, ["publish", soulPath]);
+      expect(ctx.errors.join("\n")).toContain("Error:");
+    });
+
+    it("publishes two different agents", async () => {
+      const p1 = writeSoulFile(ctx, SOUL_MD, "soul1.md");
+      const p2 = writeSoulFile(ctx, SOUL_MD_2, "soul2.md");
+      await run(ctx, ["publish", p1]);
+      // IdentityRuntime won't let us re-register; use a fresh ctx for second agent
+      // Just verify first registered
+      expect(ctx.registry.get("test-agent")).toBeDefined();
+      // Reset identity runtime to allow another registration
+      const p2Ctx = setupTestContext();
+      await p2Ctx.bus.connect();
+      consoleLogSpy.mockImplementation((...args: unknown[]) => p2Ctx.logs.push(args.map(String).join(" ")));
+      await p2Ctx.program.parseAsync(["node", "clawdia", "publish", p2]);
+      expect(p2Ctx.logs.join("\n")).toContain("another-agent");
+      await p2Ctx.bus.disconnect();
+      p2Ctx.registry.destroy();
+      consoleLogSpy.mockImplementation((...args: unknown[]) => ctx.logs.push(args.map(String).join(" ")));
+    });
+  });
+
+  // ─── search command ───
+
+  describe("search", () => {
+    beforeEach(async () => {
+      // Pre-register agents for search tests
+      const p1 = writeSoulFile(ctx, SOUL_MD, "s1.md");
+      const p2 = writeSoulFile(ctx, SOUL_MD_2, "s2.md");
+      await run(ctx, ["publish", p1]);
+      ctx.logs.length = 0;
+      // Publish second agent via a second run (fresh identity runtime)
+      // Instead just register directly via registry for simplicity
+      const identity2: AgentIdentity = {
+        name: "another-agent",
+        displayName: "Another Agent",
+        description: "Second test agent",
+        version: "2.0.0",
+        operator: "test-operator",
+        publicKey: "ed25519:key2",
+        capabilities: [
+          {
+            taxonomy: "testing.integration",
+            description: "Run integration tests",
+            inputSchema: { type: "object" },
+            outputSchema: { type: "object" },
+            sla: { maxLatencyMs: 30000, availability: 0.95 },
+            pricing: { model: "per_request", amount: 0.50, currency: "USDC" },
+          },
+        ],
+        requirements: [],
+        runtime: { model: "test-model-2" },
+      };
+      ctx.registry.register(identity2);
+    });
+
+    it("finds agents by exact taxonomy", async () => {
+      await run(ctx, ["search", "testing.unit"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("test-agent");
+      expect(output).not.toContain("another-agent");
+    });
+
+    it("finds agents by wildcard taxonomy", async () => {
+      await run(ctx, ["search", "testing.*"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("test-agent");
+      expect(output).toContain("another-agent");
+    });
+
+    it("filters by max price", async () => {
+      await run(ctx, ["search", "testing.*", "--max-price", "0.20"]);
+      const output = ctx.logs.join("\n");
+      // test-agent costs 0.10 (matches), another-agent costs 0.50 (filtered)
+      expect(output).toContain("test-agent");
+      expect(output).not.toContain("another-agent");
+    });
+
+    it("shows 'no agents found' for unknown taxonomy", async () => {
+      await run(ctx, ["search", "nonexistent.taxonomy"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("No agents found");
+    });
+
+    it("respects --limit flag", async () => {
+      await run(ctx, ["search", "testing.*", "--limit", "1"]);
+      const output = ctx.logs.join("\n");
+      // Should show only 1 result
+      expect(output).toContain("1 of 2 total");
+    });
+  });
+
+  // ─── hire command ───
+
+  describe("hire", () => {
+    beforeEach(async () => {
+      // Register an agent to hire
+      const soulPath = writeSoulFile(ctx, SOUL_MD);
+      await run(ctx, ["publish", soulPath]);
+      ctx.logs.length = 0;
+    });
+
+    it("creates a funded contract for the agent", async () => {
+      await run(ctx, ["hire", "test-agent", "testing.unit"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("Contract created and funded");
+      expect(output).toContain("test-agent");
+      expect(output).toContain("testing.unit");
+    });
+
+    it("prints the contract ID", async () => {
+      await run(ctx, ["hire", "test-agent", "testing.unit"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("Contract ID");
+      // UUID-like pattern
+      expect(output).toMatch(/[0-9a-f-]{30,}/);
+    });
+
+    it("contract reaches in_progress state", async () => {
+      await run(ctx, ["hire", "test-agent", "testing.unit"]);
+      const settled = ctx.contracts.list({ state: "in_progress" });
+      expect(settled.length).toBe(1);
+    });
+
+    it("passes --input JSON to the contract", async () => {
+      await run(ctx, [
+        "hire", "test-agent", "testing.unit",
+        "--input", '{"test_file":"src/index.ts"}',
+      ]);
+      const contracts = ctx.contracts.list();
+      expect(contracts.length).toBe(1);
+      expect(contracts[0]!.input).toEqual({ test_file: "src/index.ts" });
+    });
+
+    it("errors on unknown agent", async () => {
+      await run(ctx, ["hire", "ghost-agent", "testing.unit"]);
+      expect(ctx.errors.join("\n")).toContain("not found");
+    });
+
+    it("errors on unknown capability", async () => {
+      await run(ctx, ["hire", "test-agent", "testing.nonexistent"]);
+      expect(ctx.errors.join("\n")).toContain("does not provide");
+    });
+
+    it("errors on invalid JSON input", async () => {
+      await run(ctx, ["hire", "test-agent", "testing.unit", "--input", "not-json"]);
+      expect(ctx.errors.join("\n")).toContain("Invalid JSON");
     });
   });
 });

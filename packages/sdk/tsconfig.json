@@ -1,1 +1,15 @@
-{"extends":"../../tsconfig.base.json","compilerOptions":{"outDir":"./dist","rootDir":"./src"},"include":["src/**/*.ts"]}
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/__tests__/**"],
+  "references": [
+    { "path": "../types" },
+    { "path": "../core" },
+    { "path": "../orchestrator" },
+    { "path": "../economy" }
+  ]
+}

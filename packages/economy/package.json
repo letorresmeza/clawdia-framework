@@ -1,1 +1,36 @@
-{"name":"@clawdia/economy","version":"0.1.0","main":"./dist/index.js","scripts":{"build":"tsc"},"dependencies":{"@clawdia/types":"workspace:*","@clawdia/core":"workspace:*"},"license":"MIT"}
+{
+  "name": "@clawdia/economy",
+  "version": "0.1.0",
+  "description": "Agent economy layer — reputation, escrow, marketplace, and billing for the Clawdia Framework",
+  "keywords": ["clawdia", "agent", "economy", "escrow", "reputation", "billing", "autonomous"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "packages/economy"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*",
+    "@clawdia/core": "workspace:*",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

@@ -2,6 +2,14 @@
   "name": "@clawdia/core",
   "version": "0.1.0",
   "description": "Clawdia Core — identity, messaging, contracts, risk management",
+  "keywords": ["clawdia", "agent", "multi-agent", "autonomous", "ai", "contracts", "pub-sub"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

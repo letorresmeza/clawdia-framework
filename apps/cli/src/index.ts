@@ -12,7 +12,11 @@ import { registerSpawnCommand } from "./commands/spawn.js";
 import { registerStatusCommand } from "./commands/status.js";
 import { registerSendCommand } from "./commands/send.js";
 import { registerRegistryCommand } from "./commands/registry.js";
+import { registerPublishCommand } from "./commands/publish.js";
+import { registerSearchCommand } from "./commands/search.js";
+import { registerHireCommand } from "./commands/hire.js";
 import { loadConfig } from "./config.js";
+import { ContractEngine } from "@clawdia/core";
 
 const program = new Command();
 
@@ -59,12 +63,16 @@ async function main(): Promise<void> {
   const spawner = new AgentSpawner(runtimeProvider, bus, {
     heartbeatIntervalMs: runtimeType === "in-memory" ? 2_147_483_647 : 30_000,
   });
+  const contracts = new ContractEngine(bus);
 
   // Register commands
   registerSpawnCommand(program, { identityRuntime, registry, spawner });
   registerStatusCommand(program, { spawner, registry });
   registerSendCommand(program, { bus, spawner });
   registerRegistryCommand(program, { registry });
+  registerPublishCommand(program, { identityRuntime, registry });
+  registerSearchCommand(program, { registry });
+  registerHireCommand(program, { bus, registry, contracts });
 
   // Connect bus
   if (busType === "nats") {

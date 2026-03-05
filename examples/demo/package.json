@@ -1,0 +1,21 @@
+{
+  "name": "@clawdia/demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx multi-agent-workflow.ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/economy": "workspace:*",
+    "@clawdia/sdk": "workspace:*",
+    "@clawdia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "vitest": "^2.0.0"
+  }
+}

@@ -2,4 +2,5 @@ packages:
   - "packages/*"
   - "plugins/*"
   - "apps/*"
+  - "examples/*"
   - "contracts"

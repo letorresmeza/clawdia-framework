@@ -2,77 +2,72 @@
 
 **Agent infrastructure for the autonomous economy.**
 
-Orchestrate, coordinate, and monetize fleets of AI agents — from trading bots to coding assistants to autonomous service providers.
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9-orange?logo=pnpm)](https://pnpm.io/)
+[![Tests](https://img.shields.io/badge/tests-237%20passing-brightgreen)](#testing)
+[![Node](https://img.shields.io/badge/Node.js-20%2B-green?logo=nodedotjs)](https://nodejs.org/)
 
-## What is Clawdia?
+Orchestrate, coordinate, and monetize fleets of AI agents — from research assistants to trading bots to fully autonomous service providers.
 
-Clawdia Framework is the missing infrastructure layer for multi-agent AI systems. It provides:
+---
 
-- **Agent Identity** — `soul.md` v2 manifests define who an agent is, what it can do, and how much it costs
-- **Message Bus** — Typed, async communication between agents via ClawBus
-- **Task Contracts** — Formal agreements between agents with SLAs, verification, and payment terms
-- **Risk Management** — Circuit breakers, resource budgets, and anomaly detection
-- **Service Discovery** — Agents find and hire other agents through the registry
-- **Agent Economy** — Escrow, reputation, and settlement for autonomous transactions
+## Why Clawdia?
 
-## Quick Start
+Most multi-agent frameworks focus on **prompting**. Clawdia focuses on **infrastructure** — the boring but critical layer between an idea and a production agent economy:
+
+- Agents need to **find each other** — service discovery with capability taxonomy and pricing
+- Agents need to **agree on work** — formal task contracts with SLAs and verification
+- Agents need to **pay each other** — escrow, settlement, reputation, and billing
+- Agents need to **fail safely** — circuit breakers, resource budgets, and anomaly detection
+
+---
+
+## Quickstart
 
 ```bash
-# Clone and install
-git clone https://github.com/your-org/clawdia-framework.git
+git clone https://github.com/letorresmeza/clawdia-framework.git
 cd clawdia-framework
-pnpm install
-pnpm build
+pnpm install && pnpm build
 
-# Spawn your first agent
-clawdia spawn ./examples/trading-bot/soul.md
-clawdia status
+# Run the two-agent quickstart (under 30 lines of code)
+pnpm tsx examples/quickstart.ts
 ```
 
-## Architecture
+**Output:**
 
 ```
-┌─────────────────────────────────────────────┐
-│           Plugin Ecosystem (L4)             │
-│  Agent Adapters · Data · Trackers · Notify  │
-├─────────────────────────────────────────────┤
-│          Orchestration Layer (L3)           │
-│  Spawner · Workflows · Registry · Sessions  │
-├─────────────────────────────────────────────┤
-│            Clawdia Core (L1)               │
-│  Identity · ClawBus · Contracts · Risk     │
-├─────────────────────────────────────────────┤
-│           Agent Economy (L2)               │
-│  Reputation · Escrow · Marketplace · Billing│
-└─────────────────────────────────────────────┘
+{ message: "Hello, Alice! Welcome to the Clawdia network." }
+Contract abc-123 settled in 4ms
 ```
 
-## Packages
+**Full multi-agent product launch workflow:**
 
-| Package | Description |
-|---------|-------------|
-| `@clawdia/types` | Shared TypeScript types and plugin interfaces |
-| `@clawdia/core` | Identity runtime, ClawBus, contracts, risk engine |
-| `@clawdia/orchestrator` | Agent spawner, service registry, session manager |
-| `@clawdia/economy` | Reputation, escrow, marketplace, billing |
-| `@clawdia/sdk` | Developer SDK for building plugins |
+```bash
+pnpm --filter @clawdia/demo start
+```
 
-## Plugin System
+```
+Step 2: Spawning agents from soul.md manifests
+  ✓ Research Agent   (research-agent)
+  ✓ Data Analyst     (data-analyst)
+  ✓ Content Writer   (content-writer)
+  ✓ Code Builder     (code-builder)
+  ✓ Market Sentinel  (market-sentinel)
 
-Every integration point is swappable:
+Step 5: Coordinator runs multi-agent product launch workflow
+  → Hiring research-agent for web search…   ✓ in 1ms
+  → Hiring research-agent for synthesis…    ✓ in 1ms
+  → Hiring data-analyst for market data…    ✓ in 2ms
+  → Hiring content-writer for copy…         ✓ in 1ms
+  → Hiring content-writer for tech docs…    ✓ in 0ms
 
-| Slot | Default | Alternatives |
-|------|---------|-------------|
-| Agent | Claude Code | GPT, Codex, Aider, OpenClaw |
-| Runtime | Docker | Firecracker, tmux, k8s |
-| Data | REST/MCP | GraphQL, WebSocket, RSS |
-| Tracker | GitHub | Linear, Jira |
-| Notifier | Slack | Telegram, Discord |
-| Settlement | Base (EVM) | Arbitrum, Solana, Stripe |
-| Storage | PostgreSQL | SQLite, DynamoDB |
-| Observability | Prometheus | Datadog, OpenTelemetry |
+Status: complete | 5 sub-tasks | 0.31 USDC paid
+```
 
-## soul.md v2
+---
+
+## Build Your First Agent
 
 Every agent is defined by a `soul.md` manifest:
 
@@ -81,32 +76,275 @@ version: "2.0"
 kind: AgentManifest
 
 identity:
-  name: market-sentinel
-  display_name: "Market Sentinel"
+  name: summarizer
+  display_name: "Summarizer"
   version: "1.0.0"
-  operator: "clawdia-labs"
+  operator: "my-org"
 
 capabilities:
   provides:
-    - taxonomy: analysis.market.sentiment
-      sla:
-        max_latency_ms: 5000
-        availability: 0.995
-      pricing:
-        model: per_request
-        amount: 0.005
-        currency: USDC
+    - taxonomy: content.summarize
+      sla: { max_latency_ms: 5000, availability: 0.99 }
+      pricing: { model: per_request, amount: 0.01, currency: USDC }
+
+runtime:
+  model: "claude-haiku-4-5"
+  memory_mb: 256
 ```
 
-## Development
+Then bring it to life in under 10 lines:
+
+```typescript
+import { readFileSync } from "fs";
+import { InMemoryBus, ContractEngine } from "@clawdia/core";
+import { ServiceRegistry } from "@clawdia/orchestrator";
+import { createAgent } from "@clawdia/sdk";
+
+const bus = new InMemoryBus();
+await bus.connect();
+
+const agent = await createAgent({
+  soulMd: readFileSync("soul.md", "utf-8"),
+  bus,
+  registry: new ServiceRegistry(bus),
+  contracts: new ContractEngine(bus),
+  async onTask({ input, ctx }) {
+    ctx.log(`Summarizing ${JSON.stringify(input)}`);
+    return { summary: `Summary of: ${input}` };
+  },
+});
+```
+
+And hire it from anywhere:
+
+```typescript
+const result = await agent.hire({
+  agentName: "summarizer",
+  capability: "content.summarize",
+  input: { text: "Long article content here..." },
+  payment: { amount: 0.01, currency: "USDC" },
+});
+
+console.log(result.output.summary);
+```
+
+---
+
+## Architecture
+
+Four layers, each depending only on layers below:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    Plugin Ecosystem (L4)                     │
+│  agent-claude  runtime-docker  data-mcp  notifier-slack ...  │
+├──────────────────────────────────────────────────────────────┤
+│                  Orchestration Layer (L3)                    │
+│       ServiceRegistry             AgentSpawner               │
+│  register · discover · heartbeat  spawn · pause · kill       │
+├──────────────────────────────────────────────────────────────┤
+│               Core (L1)          │      Economy (L2)         │
+│  IdentityRuntime  ContractEngine │  ReputationEngine         │
+│  ClawBus (NATS/Memory)           │  InMemoryEscrow           │
+│  RiskEngine (circuit breakers)   │  BillingEngine            │
+└──────────────────────────────────────────────────────────────┘
+                    @clawdia/sdk wraps all layers
+```
+
+See [docs/architecture.md](docs/architecture.md) for detailed diagrams and data flow.
+
+---
+
+## Features
+
+### Agent Identity (`soul.md` v2)
+
+- YAML manifests validated by Zod — clear errors on malformed manifests
+- Ed25519 keypairs for cryptographic message authentication
+- Capability taxonomy with dot-notation (`research.web.search`)
+- Per-capability SLAs, pricing models, and JSON schemas
+
+### ClawBus
+
+- Typed publish/subscribe with 7 built-in channel types
+- `InMemoryBus` for zero-infrastructure development and testing
+- `NatsBus` for production distributed deployments
+- Dead-letter queue for failed message delivery
+
+### Task Contracts
+
+- 9-state machine: `draft → offered → accepted → in_progress → delivered → verified → settled`
+- Every transition publishes to ClawBus — zero-coupling between agents
+- Built-in timeout and dispute resolution paths
+
+### Service Discovery
+
+- Filter by taxonomy (wildcard `analysis.*`), price, currency, and reputation
+- Automatic deregistration after heartbeat timeout
+- Sort by reputation score
+
+### Agent Economy
+
+- **Reputation**: Multi-dimensional scores with time-decay weighting and peer attestations
+- **Escrow**: Fund → release/dispute/refund lifecycle for every contract
+- **Billing**: Usage metering, invoice generation, platform fee collection
+
+### Risk Management
+
+- Circuit breakers per agent with configurable failure thresholds and reset timeouts
+- Per-agent resource budgets (compute, API calls, spend)
+- Anomaly alerts via `risk.*` ClawBus channel
+
+### Plugin System
+
+Every integration point is swappable:
+
+| Slot | Interface | Provided |
+|------|-----------|---------|
+| Agent | `IAgentAdapter` | `agent-claude`, `agent-openai` |
+| Runtime | `IRuntimeProvider` | `runtime-docker`, `runtime-tmux` |
+| Data | `IDataConnector` | `data-mcp`, `data-rss` |
+| Notifier | `INotifierPlugin` | `notifier-slack`, `notifier-telegram` |
+| Settlement | `ISettlementRail` | `settlement-evm` |
+
+---
+
+## Packages
+
+| Package | Version | Description |
+|---------|---------|-------------|
+| [`@clawdia/types`](packages/types) | 0.1.0 | Shared TypeScript types and plugin interfaces |
+| [`@clawdia/core`](packages/core) | 0.1.0 | Identity, ClawBus, ContractEngine, RiskEngine |
+| [`@clawdia/orchestrator`](packages/orchestrator) | 0.1.0 | ServiceRegistry and AgentSpawner |
+| [`@clawdia/economy`](packages/economy) | 0.1.0 | Reputation, escrow, billing |
+| [`@clawdia/sdk`](packages/sdk) | 0.1.0 | `createAgent()` and `definePlugin()` helpers |
+| [`@clawdia/cli`](apps/cli) | 0.1.0 | `clawdia publish / search / hire / spawn` |
+| [`@clawdia/dashboard`](apps/dashboard) | 0.1.0 | Next.js monitoring dashboard |
+| [`@clawdia/plugin-runtime-docker`](plugins/runtime-docker) | 0.1.0 | Docker container runtime |
+
+---
+
+## CLI
 
 ```bash
-pnpm install          # Install all dependencies
-pnpm build            # Build all packages
-pnpm test             # Run all tests
-pnpm dev              # Start dev mode
+# Validate and publish a soul.md to the registry
+clawdia publish ./soul.md
+
+# Discover agents by capability
+clawdia search "analysis.*" --max-price 0.05 --currency USDC
+
+# Hire an agent for a task
+clawdia hire data-analyst analysis.data.csv --input '{"data":"..."}' --amount 0.05
+
+# Spawn an agent in a Docker container
+clawdia spawn ./soul.md
+
+# Show running agent sessions
+clawdia status
 ```
+
+---
+
+## Testing
+
+```bash
+pnpm test          # Run all 237 tests
+pnpm --filter @clawdia/core test      # Single package
+pnpm --filter @clawdia/sdk test       # SDK tests
+```
+
+Test coverage by package:
+
+| Package | Tests |
+|---------|-------|
+| `@clawdia/core` | 73 |
+| `@clawdia/orchestrator` | 35 |
+| `@clawdia/economy` | 56 |
+| `@clawdia/sdk` | 16 |
+| `@clawdia/cli` | 43 |
+| `@clawdia/plugin-runtime-docker` | 14 |
+| **Total** | **237** |
+
+---
+
+## Comparison
+
+| Feature | Clawdia | LangGraph | CrewAI | AutoGen |
+|---------|---------|-----------|--------|---------|
+| Agent discovery & registry | Yes | No | No | No |
+| Formal task contracts | Yes | No | No | No |
+| Agent payments & escrow | Yes | No | No | No |
+| Reputation system | Yes | No | No | No |
+| Plugin system | Yes | Partial | No | No |
+| Swappable bus (NATS/memory) | Yes | No | No | No |
+| TypeScript-first | Yes | Partial | No | Partial |
+| soul.md manifests | Yes | No | No | No |
+
+Clawdia is not a workflow engine or prompt chaining library — it is the **economic and messaging infrastructure** that lets agents hire each other as autonomous service providers.
+
+---
+
+## Roadmap
+
+### Phase 1 — In-Process Foundation (current, v0.1.0)
+
+- [x] soul.md v2 specification and Zod validation
+- [x] ClawBus (InMemory + NATS)
+- [x] 9-state ContractEngine
+- [x] ServiceRegistry with capability discovery
+- [x] AgentSpawner with Docker runtime
+- [x] ReputationEngine, InMemoryEscrow, BillingEngine
+- [x] `@clawdia/sdk` — `createAgent()` and `definePlugin()`
+- [x] CLI — `publish`, `search`, `hire`, `spawn`, `status`
+- [x] Next.js monitoring dashboard
+- [x] 5 example agents + multi-agent demo
+- [x] 237 tests
+
+### Phase 2 — On-Chain Escrow (v0.2.0)
+
+- [ ] EVM settlement rail (`settlement-evm`) — USDC on Base
+- [ ] On-chain contract registry (EVM)
+- [ ] Staking for reputation — slash on SLA violations
+- [ ] NATS JetStream for durable message delivery
+- [ ] Agent wallet management CLI
+- [ ] Mainnet deployment guide
+
+### Phase 3 — Resource Marketplace (v0.3.0)
+
+- [ ] Capability marketplace — search across operators
+- [ ] Auction-based contract negotiation
+- [ ] Subscription pricing model support
+- [ ] Agent composition (workflows as first-class agents)
+- [ ] WebAssembly runtime plugin
+- [ ] Prometheus + OpenTelemetry observability
+- [ ] Multi-tenant operator dashboard
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/getting-started.md) | 5-minute quickstart from install to first agent |
+| [Architecture](docs/architecture.md) | System overview with layer diagrams and data flow |
+| [soul.md Spec](docs/soul-md-spec.md) | Complete manifest format reference |
+| [Building Plugins](docs/building-plugins.md) | Create agent adapters, runtimes, and data connectors |
+| [API Reference](docs/api-reference.md) | Full API docs for all packages |
+| [Contributing](CONTRIBUTING.md) | PR process, code conventions, plugin guidelines |
+
+---
+
+## Contributing
+
+Contributions are welcome — plugins especially. See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process and code conventions.
+
+```bash
+git clone https://github.com/letorresmeza/clawdia-framework.git
+pnpm install && pnpm build && pnpm test
+```
+
+---
 
 ## License
 
-MIT
+[MIT](LICENSE) — Copyright (c) 2026 letorresmeza

@@ -1,7 +1,15 @@
 {
   "name": "@clawdia/types",
   "version": "0.1.0",
-  "description": "Shared types and interfaces for the Clawdia Framework",
+  "description": "Shared TypeScript types and plugin interfaces for the Clawdia Framework",
+  "keywords": ["clawdia", "agent", "types", "typescript", "multi-agent"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "packages/types"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

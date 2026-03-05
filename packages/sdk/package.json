@@ -1,1 +1,36 @@
-{"name":"@clawdia/sdk","version":"0.1.0","main":"./dist/index.js","scripts":{"build":"tsc"},"dependencies":{"@clawdia/types":"workspace:*"},"license":"MIT"}
+{
+  "name": "@clawdia/sdk",
+  "version": "0.1.0",
+  "description": "Developer SDK for building Clawdia agents and plugins — createAgent(), definePlugin(), and more",
+  "keywords": ["clawdia", "agent", "sdk", "plugin", "multi-agent", "ai", "autonomous"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*",
+    "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/economy": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

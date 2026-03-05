@@ -1,6 +1,15 @@
 {
   "name": "@clawdia/plugin-runtime-docker",
   "version": "0.1.0",
+  "description": "Docker runtime provider plugin for the Clawdia Framework — spawns agents as isolated containers",
+  "keywords": ["clawdia", "plugin", "runtime", "docker", "agent", "container"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "plugins/runtime-docker"
+  },
+  "homepage": "https://github.com/letorresmeza/clawdia-framework#readme",
+  "bugs": "https://github.com/letorresmeza/clawdia-framework/issues",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
