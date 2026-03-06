@@ -65,12 +65,39 @@ export interface ResourceOrder {
   id: string;
   buyer: string;
   listingId: string;
+  /** Resource type (copied from listing for query convenience) */
+  resourceType: ResourceType;
   quantity: number;
+  /** Price per unit the buyer paid (including platform spread) */
+  pricePerUnit: number;
   totalPrice: number;
+  /** Platform revenue extracted from this trade */
+  platformFee: number;
   currency: string;
   status: "pending" | "filled" | "cancelled" | "expired";
   createdAt: string;
   filledAt?: string;
+}
+
+// ─────────────────────────────────────────────────────────
+// Marketplace Stats
+// ─────────────────────────────────────────────────────────
+
+export interface ResourcePriceInfo {
+  current: number;
+  base: number;
+  utilization: number;
+  activeListings: number;
+}
+
+export interface MarketplaceStats {
+  prices: Record<string, ResourcePriceInfo>;
+  recentOrders: ResourceOrder[];
+  topSellers: Array<{ seller: string; volume: number; orders: number }>;
+  totalVolume: number;
+  platformRevenue: number;
+  activeListings: number;
+  totalOrders: number;
 }
 
 // ─────────────────────────────────────────────────────────

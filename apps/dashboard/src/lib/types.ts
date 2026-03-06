@@ -6,6 +6,9 @@ import type {
   ReputationRecord,
   EscrowHandle,
   UsageRecord,
+  ResourceListing,
+  ResourceOrder,
+  ResourcePriceInfo,
 } from "@clawdia/types";
 
 export interface SessionsResponse {
@@ -27,6 +30,64 @@ export interface ContractsResponse {
   contracts: TaskContract[];
   stats: Record<string, number>;
   filter?: ContractState;
+}
+
+export interface MarketplaceResponse {
+  prices: Record<string, ResourcePriceInfo>;
+  recentOrders: ResourceOrder[];
+  topSellers: Array<{ seller: string; volume: number; orders: number }>;
+  totalVolume: number;
+  platformRevenue: number;
+  activeListings: number;
+  totalOrders: number;
+  listings: ResourceListing[];
+}
+
+export interface OrchestrationActiveWorkflow {
+  contractId: string;
+  capability: string;
+  requester: string;
+  provider: string;
+  state: string;
+  createdAt: string;
+  payment: { amount: number; currency: string };
+}
+
+export interface OrchestrationJob {
+  contractId: string;
+  workflowId: string | null;
+  status: string;
+  qualityScore: number | null;
+  totalChargedUsdc: number;
+  marginUsdc: number;
+  stepsCompleted: number;
+  stepsTotal: number;
+  durationMs: number;
+  settledAt: string;
+}
+
+export interface AgentUtilizationEntry {
+  agentName: string;
+  tasksCompleted: number;
+  tasksFailed: number;
+  averageQualityScore: number | null;
+  successRate: number;
+}
+
+export interface OrchestrationResponse {
+  summary: {
+    activeWorkflows: number;
+    completedJobs: number;
+    totalBrokeredUsdc: number;
+    totalMarginUsdc: number;
+    registeredSpecialists: number;
+    brokerOnline: boolean;
+  };
+  activeWorkflows: OrchestrationActiveWorkflow[];
+  recentJobs: OrchestrationJob[];
+  agentUtilization: AgentUtilizationEntry[];
+  qualityByAgent: AgentUtilizationEntry[];
+  contractStats: Record<string, number>;
 }
 
 export interface EconomyResponse {

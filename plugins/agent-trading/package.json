@@ -1,0 +1,28 @@
+{
+  "name": "@clawdia/plugin-agent-trading",
+  "version": "3.0.0",
+  "description": "Clawdia v3 Python trading bot wrapped as a Clawdia Framework agent adapter",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*",
+    "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

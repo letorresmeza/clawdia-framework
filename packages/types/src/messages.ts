@@ -19,7 +19,11 @@ export type ClawChannel =
   | "risk.alert"
   | "risk.budget.exceeded"
   | "workflow.step.complete"
-  | "workflow.complete";
+  | "workflow.complete"
+  | "marketplace.listed"
+  | "marketplace.filled"
+  | "marketplace.price.changed"
+  | "marketplace.auto.buy";
 
 /** Universal message envelope — all bus messages use this shape */
 export interface ClawMessage<T = unknown> {

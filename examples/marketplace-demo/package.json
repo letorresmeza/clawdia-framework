@@ -1,0 +1,18 @@
+{
+  "name": "@clawdia/example-marketplace-demo",
+  "version": "0.1.0",
+  "description": "Agents buying and selling compute credits from each other during a multi-agent workflow",
+  "private": true,
+  "scripts": {
+    "demo": "tsx src/marketplace-demo.ts"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/economy": "workspace:*",
+    "@clawdia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

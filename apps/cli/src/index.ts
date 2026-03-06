@@ -15,6 +15,7 @@ import { registerRegistryCommand } from "./commands/registry.js";
 import { registerPublishCommand } from "./commands/publish.js";
 import { registerSearchCommand } from "./commands/search.js";
 import { registerHireCommand } from "./commands/hire.js";
+import { registerBrokerCommand } from "./commands/broker.js";
 import { loadConfig } from "./config.js";
 import { ContractEngine } from "@clawdia/core";
 
@@ -73,6 +74,7 @@ async function main(): Promise<void> {
   registerPublishCommand(program, { identityRuntime, registry });
   registerSearchCommand(program, { registry });
   registerHireCommand(program, { bus, registry, contracts });
+  registerBrokerCommand(program, { bus, registry, contracts });
 
   // Connect bus
   if (busType === "nats") {

@@ -51,8 +51,8 @@ export interface CapabilitySLA {
 
 export interface CapabilityPricing {
   /** Pricing model type */
-  model: "per_request" | "per_minute" | "flat_rate" | "per_token";
-  /** Price amount */
+  model: "per_request" | "per_minute" | "flat_rate" | "per_token" | "percentage_of_total";
+  /** Price amount (for percentage_of_total: decimal e.g. 0.15 = 15%) */
   amount: number;
   /** Currency (USDC, USDT, USD, etc.) */
   currency: string;

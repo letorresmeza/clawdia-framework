@@ -23,7 +23,7 @@ const CapabilitySchema = z.object({
     availability: z.number().min(0).max(1),
   }),
   pricing: z.object({
-    model: z.enum(["per_request", "per_minute", "flat_rate", "per_token"]),
+    model: z.enum(["per_request", "per_minute", "flat_rate", "per_token", "percentage_of_total"]),
     amount: z.number().nonnegative(),
     currency: z.string(),
   }),

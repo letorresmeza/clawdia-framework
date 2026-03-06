@@ -1,1 +1,36 @@
-{"name":"@clawdia/contracts","version":"0.1.0","private":true,"license":"MIT"}
+{
+  "name": "@clawdia/contracts",
+  "version": "0.1.0",
+  "description": "Clawdia Framework on-chain escrow contracts — EscrowFactory and ClawdiaEscrow for Base Sepolia",
+  "private": true,
+  "license": "MIT",
+  "keywords": [
+    "clawdia",
+    "solidity",
+    "escrow",
+    "base",
+    "usdc"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "contracts"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:baseSepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "@types/chai": "^5.2.3",
+    "chai": "4",
+    "hardhat": "^2.22.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.5.0"
+  }
+}

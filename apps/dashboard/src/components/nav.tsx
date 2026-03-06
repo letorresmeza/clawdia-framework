@@ -7,6 +7,9 @@ const links = [
   { href: "/", label: "Sessions", icon: "M" },
   { href: "/registry", label: "Registry", icon: "R" },
   { href: "/contracts", label: "Contracts", icon: "C" },
+  { href: "/orchestration", label: "Orchestration", icon: "O" },
+  { href: "/economy", label: "Economy", icon: "E" },
+  { href: "/marketplace", label: "Marketplace", icon: "X" },
   { href: "/logs", label: "Logs", icon: "L" },
 ];
 

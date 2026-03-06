@@ -1,7 +1,7 @@
 import { InMemoryBus, NatsBus, ContractEngine } from "@clawdia/core";
 import type { IClawBus } from "@clawdia/core";
 import { ServiceRegistry, AgentSpawner } from "@clawdia/orchestrator";
-import { ReputationEngine, InMemoryEscrow, BillingEngine } from "@clawdia/economy";
+import { ReputationEngine, InMemoryEscrow, BillingEngine, ResourceMarketplace } from "@clawdia/economy";
 import type { ClawChannel } from "@clawdia/types";
 
 // In-memory runtime stub for dashboard (no Docker needed)
@@ -35,6 +35,10 @@ export const ALL_CHANNELS: ClawChannel[] = [
   "risk.budget.exceeded",
   "workflow.step.complete",
   "workflow.complete",
+  "marketplace.listed",
+  "marketplace.filled",
+  "marketplace.price.changed",
+  "marketplace.auto.buy",
 ];
 
 interface Engines {
@@ -45,6 +49,7 @@ interface Engines {
   reputation: ReputationEngine;
   escrow: InMemoryEscrow;
   billing: BillingEngine;
+  marketplace: ResourceMarketplace;
 }
 
 // Use globalThis to survive Next.js hot reloads
@@ -86,16 +91,18 @@ export async function initEngines(): Promise<Engines> {
 
     const contracts = new ContractEngine(bus);
 
-    const reputation = new ReputationEngine(bus);
-    const escrow = new InMemoryEscrow(bus);
-    const billing = new BillingEngine(bus);
+    const reputation  = new ReputationEngine(bus);
+    const escrow      = new InMemoryEscrow(bus);
+    const billing     = new BillingEngine(bus);
+    const marketplace = new ResourceMarketplace(bus, billing, undefined, { spreadPercent: 5 });
 
     // Start economy engines listening to bus events
     reputation.start();
     escrow.start();
     billing.start();
+    marketplace.start();
 
-    const engines: Engines = { bus, registry, spawner, contracts, reputation, escrow, billing };
+    const engines: Engines = { bus, registry, spawner, contracts, reputation, escrow, billing, marketplace };
     g.__clawdia_engines = engines;
     return engines;
   })();

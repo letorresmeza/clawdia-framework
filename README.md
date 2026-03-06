@@ -130,6 +130,79 @@ console.log(result.output.summary);
 
 ---
 
+## Clawdia — The Flagship Orchestrator Agent
+
+**Clawdia is an agent-of-agents broker.** She takes complex requests, decomposes them into DAGs of subtasks, discovers the best specialist in the registry for each step, hires them through task contracts, monitors execution, quality-checks outputs, and assembles the final deliverable. She earns a 15% orchestration margin on every job she brokers.
+
+```bash
+# Run the broker with a natural language request
+clawdia broker "Research the top 5 AI agent frameworks, compare their features, and produce a summary report"
+```
+
+```
+Clawdia Broker
+Agent-of-agents orchestration
+
+Request: "Research the top 5 AI agent frameworks..."
+Budget:  1.0 USDC
+
+Decomposition
+─────────────────────────────────────────────────
+  Type:     research
+  Subtasks: 3
+
+  st-1    research.web.search                        $0.200  (start)
+  st-2    research.synthesis                         $0.400  → depends on [st-1]
+  st-3    content.writing.technical                  $0.400  → depends on [st-2]
+
+Agent Discovery
+─────────────────────────────────────────────────
+  ✓ research.web.search             → research-agent   score: 87%
+  ✓ research.synthesis              → research-agent   score: 87%
+  ✓ content.writing.technical       → content-writer   score: 83%
+
+Executing Workflow
+─────────────────────────────────────────────────
+  ✓ st-1    completed by research-agent  (45ms, quality: 80%)
+  ✓ st-2    completed by research-agent  (62ms, quality: 85%)
+  ✓ st-3    completed by content-writer  (38ms, quality: 82%)
+
+Results     Status: completed  Steps: 3/3  Quality: 82% ✓  Duration: 145ms
+P&L         Subtask costs: 0.1500 USDC  +Margin: 0.0225 USDC (15%)  Total: 0.1725 USDC
+```
+
+### How the Broker Works
+
+```
+Request → TaskDecomposer → WorkflowDAG (subtasks with dependencies)
+                ↓
+       AgentMatcher (per subtask)
+         reputation 40% + price 30% + availability 20% + performance 10%
+                ↓
+       WorkflowExecutor (respects DAG dependencies)
+         → create TaskContract → fund escrow → dispatch via ClawBus
+         → on failure: retry same agent → try next candidate → escalate
+                ↓
+       OutputAssembler
+         → merge subtask outputs by request type (research/analysis/content/code)
+         → quality score = relevance 40% + completeness 35% + coherence 25%
+         → if quality < 0.70: identify weakest subtask → trigger rework
+                ↓
+       Final Deliverable + P&L Report (15% orchestration margin)
+```
+
+Clawdia uses the **same framework APIs** as every other agent — ClawBus, ContractEngine, ServiceRegistry. She is the first and most important agent in the economy, but not a special case.
+
+**Run the full demo:**
+
+```bash
+npx tsx examples/orchestrator-agent/broker.ts
+# or with a custom request:
+npx tsx examples/orchestrator-agent/broker.ts "Analyze the market trends in AI infrastructure and write a report"
+```
+
+---
+
 ## Architecture
 
 Four layers, each depending only on layers below:
@@ -201,7 +274,7 @@ Every integration point is swappable:
 
 | Slot | Interface | Provided |
 |------|-----------|---------|
-| Agent | `IAgentAdapter` | `agent-claude`, `agent-openai` |
+| Agent | `IAgentAdapter` | `agent-claude`, `agent-openai`, `agent-orchestrator` |
 | Runtime | `IRuntimeProvider` | `runtime-docker`, `runtime-tmux` |
 | Data | `IDataConnector` | `data-mcp`, `data-rss` |
 | Notifier | `INotifierPlugin` | `notifier-slack`, `notifier-telegram` |
@@ -221,6 +294,7 @@ Every integration point is swappable:
 | [`@clawdia/cli`](apps/cli) | 0.1.0 | `clawdia publish / search / hire / spawn` |
 | [`@clawdia/dashboard`](apps/dashboard) | 0.1.0 | Next.js monitoring dashboard |
 | [`@clawdia/plugin-runtime-docker`](plugins/runtime-docker) | 0.1.0 | Docker container runtime |
+| [`@clawdia/plugin-agent-orchestrator`](plugins/agent-orchestrator) | 0.1.0 | Clawdia broker: TaskDecomposer, AgentMatcher, WorkflowExecutor, OutputAssembler |
 
 ---
 
@@ -235,6 +309,11 @@ clawdia search "analysis.*" --max-price 0.05 --currency USDC
 
 # Hire an agent for a task
 clawdia hire data-analyst analysis.data.csv --input '{"data":"..."}' --amount 0.05
+
+# Broker a complex multi-agent job (auto-decomposes, discovers, executes, assembles)
+clawdia broker "Research the top 5 AI agent frameworks and compare them"
+clawdia broker "Analyze market trends and write a report" --budget 2.0 --quality 0.80
+clawdia broker "Build a REST API" --dry-run   # plan without executing
 
 # Spawn an agent in a Docker container
 clawdia spawn ./soul.md

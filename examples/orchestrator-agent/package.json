@@ -1,0 +1,22 @@
+{
+  "name": "@clawdia/example-orchestrator-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Clawdia Broker demo — agent-of-agents orchestration",
+  "scripts": {
+    "start": "tsx broker.ts",
+    "broker": "tsx broker.ts"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/economy": "workspace:*",
+    "@clawdia/sdk": "workspace:*",
+    "@clawdia/types": "workspace:*",
+    "@clawdia/plugin-agent-orchestrator": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}
