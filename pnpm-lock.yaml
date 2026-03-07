@@ -38,6 +38,9 @@ importers:
       '@clawdia/orchestrator':
         specifier: workspace:*
         version: link:../../packages/orchestrator
+      '@clawdia/plugin-agent-orchestrator':
+        specifier: workspace:*
+        version: link:../../plugins/agent-orchestrator
       '@clawdia/plugin-runtime-docker':
         specifier: workspace:*
         version: link:../../plugins/runtime-docker
@@ -181,6 +184,31 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  examples/orchestrator-agent:
+    dependencies:
+      '@clawdia/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@clawdia/economy':
+        specifier: workspace:*
+        version: link:../../packages/economy
+      '@clawdia/orchestrator':
+        specifier: workspace:*
+        version: link:../../packages/orchestrator
+      '@clawdia/plugin-agent-orchestrator':
+        specifier: workspace:*
+        version: link:../../plugins/agent-orchestrator
+      '@clawdia/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@clawdia/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.21.0
+
   packages/core:
     dependencies:
       '@clawdia/types':
@@ -282,6 +310,34 @@ importers:
       '@clawdia/types':
         specifier: workspace:*
         version: link:../../packages/types
+
+  plugins/agent-orchestrator:
+    dependencies:
+      '@clawdia/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@clawdia/orchestrator':
+        specifier: workspace:*
+        version: link:../../packages/orchestrator
+      '@clawdia/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      uuid:
+        specifier: ^10.0.0
+        version: 10.0.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.35
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.35)
 
   plugins/agent-trading:
     dependencies:
@@ -4742,6 +4798,14 @@ snapshots:
     optionalDependencies:
       vite: 5.4.21(@types/node@20.19.35)
 
+  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.7.5))':
+    dependencies:
+      '@vitest/spy': 2.1.9
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 5.4.21(@types/node@22.7.5)
+
   '@vitest/pretty-format@2.1.9':
     dependencies:
       tinyrainbow: 1.2.0
@@ -7205,7 +7269,7 @@ snapshots:
   vitest@2.1.9(@types/node@22.7.5):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@20.19.35))
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.7.5))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9
