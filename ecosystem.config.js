@@ -15,6 +15,7 @@ module.exports = {
       // Run the compiled daemon via node. Build first: pnpm build
       script: "packages/orchestrator/dist/daemon.js",
       cwd: "/root/clawdia-framework",
+      user: "clawdia",
 
       // PM2 runtime options
       interpreter: "node",

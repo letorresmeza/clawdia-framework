@@ -22,6 +22,8 @@ export class NatsBus implements IClawBus {
   private connection: NatsConnection | null = null;
   private connected = false;
   private subscriptions = new Map<string, SubscriptionEntry>();
+  private seenIds: Set<string> = new Set();
+  private seenIdsQueue: string[] = [];
 
   async connect(url?: string): Promise<void> {
     this.connection = await connect({ servers: url ?? DEFAULT_URL });
@@ -71,6 +73,18 @@ export class NatsBus implements IClawBus {
       ttl: opts?.ttl,
       metadata: opts?.metadata,
     };
+
+    // Deduplication: skip if we've already seen this message ID
+    if (this.seenIds.has(message.id)) {
+      console.warn(`[NatsBus] Duplicate message dropped: ${message.id}`);
+      return message.id;
+    }
+    this.seenIds.add(message.id);
+    this.seenIdsQueue.push(message.id);
+    if (this.seenIdsQueue.length > 10_000) {
+      const oldest = this.seenIdsQueue.shift()!;
+      this.seenIds.delete(oldest);
+    }
 
     const data = encoder.encode(JSON.stringify(message));
     this.connection.publish(channel, data);

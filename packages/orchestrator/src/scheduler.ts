@@ -141,11 +141,18 @@ export class BrokerScheduler {
       if (!cronMatches(job.cronExpr, now)) continue;
 
       // Fire and forget — errors are caught inside runJob
-      void this.runJob(job);
+      void this.runJob(job, now);
     }
   }
 
-  private async runJob(job: ScheduledJob): Promise<void> {
+  private async runJob(job: ScheduledJob, now: Date): Promise<void> {
+    // Idempotency: skip if this job has already run in this minute
+    const executionId = `${job.name}:${now.toISOString().slice(0, 16)}`;
+    if (this.services.state.hasExecutionId(executionId)) {
+      console.warn(`[scheduler] Skipping duplicate execution: ${executionId}`);
+      return;
+    }
+
     this.running.add(job.name);
     const startMs = Date.now();
 
@@ -195,6 +202,7 @@ export class BrokerScheduler {
       const durationMs = Date.now() - startMs;
       this.services.state.recordSchedulerRun(job.name, true);
       this.services.state.addPnl({ settled: 1, brokeredUsdc: 0.01, marginUsdc: 0.0015 });
+      this.services.state.addExecutionId(executionId);
 
       console.log(`[scheduler] Completed: ${job.name} in ${durationMs}ms`);
 

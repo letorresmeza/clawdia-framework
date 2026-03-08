@@ -31,6 +31,7 @@ export interface SchedulerStats {
   lastRuns: Record<string, string>;
   successCounts: Record<string, number>;
   errorCounts: Record<string, number>;
+  executionIds: string[];
 }
 
 export interface ClawdiaState {
@@ -61,7 +62,7 @@ const DEFAULT_STATE: ClawdiaState = {
   daemonStartedAt: new Date().toISOString(),
   registry: { agentCount: 0, agents: [] },
   contracts: { total: 0, byState: {} },
-  scheduler: { lastRuns: {}, successCounts: {}, errorCounts: {} },
+  scheduler: { lastRuns: {}, successCounts: {}, errorCounts: {}, executionIds: [] },
   pnl: {
     totalBrokeredUsdc: 0,
     marginEarnedUsdc: 0,
@@ -182,6 +183,19 @@ export class StateManager {
     this.state.pnl.weeklyBrokeredUsdc = 0;
     this.state.pnl.weeklyMarginEarnedUsdc = 0;
     this.state.pnl.weekStartedAt = new Date().toISOString();
+  }
+
+  /** Record a scheduler execution ID for idempotency. Caps at 10,000 entries. */
+  addExecutionId(id: string): void {
+    this.state.scheduler.executionIds.push(id);
+    if (this.state.scheduler.executionIds.length > 10_000) {
+      this.state.scheduler.executionIds.shift();
+    }
+  }
+
+  /** Check whether a scheduler execution ID has already been recorded. */
+  hasExecutionId(id: string): boolean {
+    return this.state.scheduler.executionIds.includes(id);
   }
 
   // ─── Private ───

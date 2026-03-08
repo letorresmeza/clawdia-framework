@@ -68,6 +68,7 @@ describe("ContractEngine", () => {
       const contract = engine.create(makeContractSpec(requester));
       expect(contract.id).toBeDefined();
       expect(contract.state).toBe("draft");
+      expect(contract.version).toBe(0);
       expect(contract.requester.name).toBe("requester-agent");
       expect(contract.capability).toBe("test.capability");
       expect(contract.history).toEqual([]);
@@ -108,6 +109,7 @@ describe("ContractEngine", () => {
       const contract = engine.create(makeContractSpec(requester));
       const updated = await engine.transition(contract.id, "OFFER", "requester-agent");
       expect(updated.state).toBe("offered");
+      expect(updated.version).toBe(1);
       expect(updated.history).toHaveLength(1);
       expect(updated.history[0].from).toBe("draft");
       expect(updated.history[0].to).toBe("offered");
@@ -127,6 +129,7 @@ describe("ContractEngine", () => {
       const settled = await engine.transition(id, "SETTLE", "system");
 
       expect(settled.state).toBe("settled");
+      expect(settled.version).toBe(6);
       expect(settled.history).toHaveLength(6);
     });
 

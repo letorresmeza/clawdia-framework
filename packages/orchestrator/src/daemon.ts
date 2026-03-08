@@ -17,6 +17,7 @@
 
 import * as fs from "node:fs";
 import * as http from "node:http";
+import * as crypto from "node:crypto";
 import { InMemoryBus, ContractEngine, RiskEngine } from "@clawdia/core";
 import { ServiceRegistry } from "./registry/service-registry.js";
 import { StateManager } from "./state.js";
@@ -75,6 +76,7 @@ const LOG_DIR = process.env["LOG_DIR"] ?? "/var/log/clawdia";
 const LOG_FILE = `${LOG_DIR}/daemon.log`;
 const PORT_DASHBOARD = parseInt(process.env["PORT"] ?? "3000", 10);
 const PORT_API = parseInt(process.env["API_PORT"] ?? "3001", 10);
+const API_KEY_FILE = "/var/lib/clawdia/api-key.txt";
 
 function ensureLogDir(): void {
   if (!fs.existsSync(LOG_DIR)) {
@@ -313,6 +315,8 @@ class BrokerDaemon {
   private recentEvents: Array<{ ts: string; channel: string; summary: string }> = [];
   private shuttingDown = false;
   private heartbeatInterval?: NodeJS.Timeout;
+  private watchdogInterval?: NodeJS.Timeout;
+  private apiKey = "";
 
   constructor() {
     this.contracts = new ContractEngine(this.bus);
@@ -338,7 +342,10 @@ class BrokerDaemon {
     // 3. Load persisted state (crash recovery)
     this.state.load();
 
-    // 4. Load Telegram notifier if configured
+    // 4. Load or create API key
+    this.loadOrCreateApiKey();
+
+    // 5. Load Telegram notifier if configured
     const hasTelegram =
       process.env["TELEGRAM_BOT_TOKEN"] && process.env["TELEGRAM_CHAT_ID"];
     if (hasTelegram) {
@@ -366,10 +373,10 @@ class BrokerDaemon {
       log("WARN", "daemon", "TELEGRAM_BOT_TOKEN/CHAT_ID not set — notifications disabled");
     }
 
-    // 5. Subscribe to all ClawBus channels for logging and Telegram routing
+    // 6. Subscribe to all ClawBus channels for logging and Telegram routing
     this.subscribeToAllChannels();
 
-    // 6. Register Clawdia + all specialist agents
+    // 7. Register Clawdia + all specialist agents
     this.registry.register(CLAWDIA_IDENTITY);
     for (const agent of SPECIALIST_AGENTS) {
       this.registry.register(agent);
@@ -378,11 +385,11 @@ class BrokerDaemon {
       agents: [CLAWDIA_IDENTITY.name, ...SPECIALIST_AGENTS.map((a) => a.name)],
     });
 
-    // 7. Start HTTP servers
+    // 8. Start HTTP servers
     this.startDashboardServer();
     this.startApiServer();
 
-    // 8. Start scheduler
+    // 9. Start scheduler
     const specialistsByName = new Map<string, AgentIdentity>(
       SPECIALIST_AGENTS.map((a) => [a.name, a]),
     );
@@ -397,10 +404,13 @@ class BrokerDaemon {
     });
     this.scheduler.start();
 
-    // 9. Start state auto-save
+    // 10. Start state auto-save
     this.state.startAutoSave(60_000);
 
-    // 10. Periodic heartbeats — keep all in-process agents online in the registry
+    // 11. Start event loop watchdog
+    this.startWatchdog();
+
+    // 12. Periodic heartbeats — keep all in-process agents online in the registry
     this.heartbeatInterval = setInterval(() => {
       const allAgents = [CLAWDIA_IDENTITY, ...SPECIALIST_AGENTS];
       for (const agent of allAgents) {
@@ -417,7 +427,7 @@ class BrokerDaemon {
     }, 60_000);
     this.heartbeatInterval?.unref();
 
-    // 10. Send startup notification
+    // 13. Send startup notification
     await this.notifier
       .send({
         level: "info",
@@ -438,6 +448,11 @@ class BrokerDaemon {
     this.shuttingDown = true;
 
     log("INFO", "daemon", `Shutdown initiated (${signal})`);
+
+    // Stop watchdog
+    if (this.watchdogInterval) {
+      clearInterval(this.watchdogInterval);
+    }
 
     // Stop accepting new jobs
     this.scheduler?.stop();
@@ -474,6 +489,48 @@ class BrokerDaemon {
 
     log("INFO", "daemon", "Shutdown complete");
     process.exit(0);
+  }
+
+  // ─── API key management ───
+
+  private loadOrCreateApiKey(): void {
+    const keyDir = "/var/lib/clawdia";
+    if (!fs.existsSync(keyDir)) {
+      fs.mkdirSync(keyDir, { recursive: true });
+    }
+
+    if (fs.existsSync(API_KEY_FILE)) {
+      this.apiKey = fs.readFileSync(API_KEY_FILE, "utf-8").trim();
+      log("INFO", "daemon", "API key loaded from disk");
+    } else {
+      this.apiKey = crypto.randomBytes(32).toString("hex");
+      fs.writeFileSync(API_KEY_FILE, this.apiKey, { encoding: "utf-8", mode: 0o600 });
+      console.log(`[daemon] API Key (store safely): ${this.apiKey}`);
+      log("INFO", "daemon", "API key generated and saved");
+    }
+  }
+
+  // ─── Event loop watchdog ───
+
+  private startWatchdog(): void {
+    const BLOCK_THRESHOLD_MS = 30_000;
+    let lastTick = Date.now();
+
+    // Update lastTick every second
+    const tickInterval = setInterval(() => {
+      lastTick = Date.now();
+    }, 1_000);
+    tickInterval.unref();
+
+    // Check every 5 seconds if event loop was blocked
+    this.watchdogInterval = setInterval(() => {
+      const lag = Date.now() - lastTick - 5_000;
+      if (lag > BLOCK_THRESHOLD_MS) {
+        log("ERROR", "watchdog", `Event loop blocked for ${lag}ms — restarting daemon`);
+        void this.shutdown("watchdog");
+      }
+    }, 5_000);
+    this.watchdogInterval.unref();
   }
 
   // ─── ClawBus subscriptions ───
@@ -585,8 +642,8 @@ class BrokerDaemon {
       }
     });
 
-    this.dashboardServer.listen(PORT_DASHBOARD, () => {
-      log("INFO", "dashboard", `Dashboard running on http://0.0.0.0:${PORT_DASHBOARD}`);
+    this.dashboardServer.listen(PORT_DASHBOARD, "127.0.0.1", () => {
+      log("INFO", "dashboard", `Dashboard running on http://127.0.0.1:${PORT_DASHBOARD}`);
     });
 
     this.dashboardServer.on("error", (err: NodeJS.ErrnoException) => {
@@ -606,7 +663,7 @@ class BrokerDaemon {
 
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key");
 
       if (req.method === "OPTIONS") {
         res.writeHead(204);
@@ -614,9 +671,36 @@ class BrokerDaemon {
         return;
       }
 
+      // API key authentication — required for all /api/* endpoints except /api/health
+      if (url.pathname.startsWith("/api/") && url.pathname !== "/api/health") {
+        if (req.headers["x-api-key"] !== this.apiKey) {
+          res.writeHead(401, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unauthorized" }));
+          return;
+        }
+      }
+
       if (req.method === "GET" && url.pathname === "/api/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
+        const memUsage = process.memoryUsage();
+        const schedulerJobs = this.scheduler?.getJobs() ?? [];
+        const lastSchedulerRun = schedulerJobs
+          .map((j) => j.lastRun)
+          .filter(Boolean)
+          .sort()
+          .at(-1);
+        res.end(JSON.stringify({
+          status: "ok",
+          uptime: process.uptime(),
+          agentCount: this.registry.list().length,
+          lastSchedulerRun: lastSchedulerRun ?? null,
+          busConnected: true,
+          memoryUsageMb: {
+            rss: (memUsage.rss / 1_048_576).toFixed(1),
+            heapUsed: (memUsage.heapUsed / 1_048_576).toFixed(1),
+            heapTotal: (memUsage.heapTotal / 1_048_576).toFixed(1),
+          },
+        }));
         return;
       }
 
@@ -647,8 +731,8 @@ class BrokerDaemon {
       res.end(JSON.stringify({ error: "Not found" }));
     });
 
-    this.apiServer.listen(PORT_API, () => {
-      log("INFO", "api", `REST API running on http://0.0.0.0:${PORT_API}`);
+    this.apiServer.listen(PORT_API, "127.0.0.1", () => {
+      log("INFO", "api", `REST API running on http://127.0.0.1:${PORT_API}`);
     });
 
     this.apiServer.on("error", (err: NodeJS.ErrnoException) => {

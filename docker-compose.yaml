@@ -4,7 +4,8 @@ services:
   # ─── Message Bus ───
   nats:
     image: nats:latest
-    network_mode: host
+    ports:
+      - "127.0.0.1:4222:4222"
     command: ["--jetstream", "--store_dir=/data"]
     volumes:
       - nats-data:/data

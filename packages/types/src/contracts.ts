@@ -36,6 +36,8 @@ export interface TaskContract {
   id: string;
   /** Current state */
   state: ContractState;
+  /** Optimistic concurrency version — incremented on every transition */
+  version: number;
   /** Agent requesting the work */
   requester: AgentIdentity;
   /** Agent providing the work (set on acceptance) */
@@ -137,5 +139,5 @@ export interface ContractHistoryEntry {
 
 export type CreateContractSpec = Omit<
   TaskContract,
-  "id" | "state" | "createdAt" | "updatedAt" | "history" | "output"
+  "id" | "state" | "version" | "createdAt" | "updatedAt" | "history" | "output"
 >;

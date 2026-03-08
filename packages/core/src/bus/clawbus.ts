@@ -38,6 +38,8 @@ export class InMemoryBus implements IClawBus {
   private handlers = new Map<string, Map<string, MessageHandler<any>>>();
   private deadLetterQueue: ClawMessage[] = [];
   private connected = false;
+  private seenIds: Set<string> = new Set();
+  private seenIdsQueue: string[] = [];
 
   async connect(): Promise<void> {
     this.connected = true;
@@ -68,6 +70,18 @@ export class InMemoryBus implements IClawBus {
       ttl: opts?.ttl,
       metadata: opts?.metadata,
     };
+
+    // Deduplication: skip if we've already seen this message ID
+    if (this.seenIds.has(message.id)) {
+      console.warn(`[ClawBus] Duplicate message dropped: ${message.id}`);
+      return message.id;
+    }
+    this.seenIds.add(message.id);
+    this.seenIdsQueue.push(message.id);
+    if (this.seenIdsQueue.length > 10_000) {
+      const oldest = this.seenIdsQueue.shift()!;
+      this.seenIds.delete(oldest);
+    }
 
     const channelHandlers = this.handlers.get(channel);
     if (channelHandlers) {
@@ -114,5 +128,10 @@ export class InMemoryBus implements IClawBus {
   /** Get handler count for a channel (for testing) */
   getHandlerCount(channel: ClawChannel): number {
     return this.handlers.get(channel)?.size ?? 0;
+  }
+
+  /** Get count of tracked seen message IDs (for testing) */
+  getSeenIdsCount(): number {
+    return this.seenIds.size;
   }
 }
