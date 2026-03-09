@@ -203,6 +203,125 @@ npx tsx examples/orchestrator-agent/broker.ts "Analyze the market trends in AI i
 
 ---
 
+## Autoresearch — Autonomous ML Research Loop
+
+**Clawdia turns Karpathy's autoresearch pattern into a multi-agent orchestrated workflow.**
+
+The [autoresearch example](examples/autoresearch/) shows that Clawdia can orchestrate *any* autonomous loop — not just trading or content tasks. Each iteration of the ML research loop is decomposed into real TaskContracts, hired through the ServiceRegistry, and settled through the economy layer.
+
+```bash
+# Run the full autonomous research loop (10 iterations by default)
+npx tsx examples/autoresearch/autoresearch.ts
+
+# Or via CLI with custom goal and iteration count
+clawdia research "Optimize the GPT training loop for lower validation loss" --iterations 5
+
+# Dry-run: see the research plan without executing contracts
+clawdia research "Lower validation BPB" --iterations 10 --dry-run
+```
+
+**Example output:**
+
+```
+════════════════════════════════════════════════════════════════════
+  Clawdia Autoresearch — Autonomous ML Research Loop
+════════════════════════════════════════════════════════════════════
+
+Goal: "Optimize the GPT training loop for lower validation loss"
+Iterations: 10   Baseline val_bpb: 3.142
+
+Step 2: Registering research specialist agents
+────────────────────────────────────────────────────────────────────
+  ● research-hypothesis-agent        research.ml.hypothesis   rep: 91%
+  ● code-modifier-agent              coding.ml.modify         rep: 88%
+  ● experiment-evaluator-agent       analysis.ml.evaluate     rep: 89%
+  ● experiment-logger-agent          data.experiment.log      rep: 93%
+
+────────────── Iteration 1/10 ──────────────
+  → [hyp]  research.ml.hypothesis     [a1b2c3d4]
+    Hypothesis: Reduce learning rate from 3e-4 to 1e-4 for more stable convergence
+    Target: LEARNING_RATE   Confidence: 85%   Expected: -0.040 val_bpb
+
+  → [code] coding.ml.modify           [e5f6g7h8]
+    Modified: LEARNING_RATE = 3e-4  →  LEARNING_RATE = 1e-4
+    Lines changed: 1
+
+  → [stub] compute.gpu.train          [mock — TODO: real GPU]
+    Simulated duration: 4m48s   val_bpb: 3.098
+
+  → [eval] analysis.ml.evaluate       [i9j0k1l2]
+    Decision: KEPT ✓   delta: -0.044   cumulative: 1.4% improvement
+
+  → [log]  data.experiment.log        [m3n4o5p6]
+    Log entry: exp-iter1-...   kept: 1/1   best: 3.098
+
+  ...
+
+════════════════════════════════════════════════════════════════════
+  Research Complete
+════════════════════════════════════════════════════════════════════
+
+  Starting baseline:   3.142 val_bpb
+  Final val_bpb:       2.814 val_bpb
+  Total improvement:   -0.328 val_bpb (10.4% better)
+  Experiments kept:    7/10 (3 discarded)
+  Total contracts:     40 (hypothesis + code + evaluate + log × 10)
+  Total cost:          0.7500 USDC
+
+  Leaderboard (top 5 by val_bpb):
+  ──────────────────────────────────────────────────────────────────
+  #1  iter 7   Switch to pre-LayerNorm (normalize before attention)  2.814  -0.038 (3.5%)
+  #2  iter 4   Add cosine annealing LR schedule                      2.852  -0.031 (2.8%)
+  #3  iter 1   Reduce learning rate from 3e-4 to 1e-4                2.883  -0.044 (1.4%)
+```
+
+### The Four Research Agents
+
+| Agent | Capability | Role |
+|-------|-----------|------|
+| [`research-hypothesis-agent`](examples/autoresearch/agents/research-hypothesis-agent/soul.md) | `research.ml.hypothesis` | Analyzes history, proposes next modification with rationale and confidence |
+| [`code-modifier-agent`](examples/autoresearch/agents/code-modifier-agent/soul.md) | `coding.ml.modify` | Implements the hypothesis in the training script, returns diff |
+| [`experiment-evaluator-agent`](examples/autoresearch/agents/experiment-evaluator-agent/soul.md) | `analysis.ml.evaluate` | Compares val_bpb to baseline, decides keep/discard, updates baseline |
+| [`experiment-logger-agent`](examples/autoresearch/agents/experiment-logger-agent/soul.md) | `data.experiment.log` | Appends to structured log, maintains leaderboard, extracts cumulative learnings |
+
+### How the Research Loop Works
+
+```
+Goal + baseline code
+       ↓
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Iteration N                                                   │
+  │                                                                │
+  │  [contract] research.ml.hypothesis                            │
+  │    current_code + history + goal → hypothesis + rationale     │
+  │             ↓                                                  │
+  │  [contract] coding.ml.modify                                  │
+  │    hypothesis + current_code → modified_code + diff           │
+  │             ↓                                                  │
+  │  [stub → TODO: compute.gpu.train]                             │
+  │    modified_code → val_bpb  (5-min GPU training run)          │
+  │             ↓                                                  │
+  │  [contract] analysis.ml.evaluate                              │
+  │    val_bpb vs baseline → keep/discard + new_baseline          │
+  │             ↓                                                  │
+  │  [contract] data.experiment.log                               │
+  │    full record → updated leaderboard + learnings              │
+  └────────────────────────────────────────────────────────────────┘
+       ↓
+  if kept: current_code = modified_code, baseline = new val_bpb
+  if discarded: revert, keep baseline
+       ↓
+  Repeat for N iterations
+       ↓
+  Summary: best result, cumulative improvement, leaderboard
+```
+
+Each step is a **real `TaskContract`** — created by the orchestrator, funded through escrow, dispatched via ClawBus to the provider agent, and settled on delivery. The training step is stubbed with a deterministic mock that simulates a 5-minute GPU run. Swap in a `compute.gpu.train` agent (RunPod, Lambda Labs, or a local GPU node) to run real experiments.
+
+This is the same pattern Clawdia uses for trading, content, and research workflows. Any autonomous loop that sequences distinct capabilities can be expressed as a multi-agent Clawdia workflow.
+
+---
+
 ## Architecture
 
 Four layers, each depending only on layers below:
@@ -315,6 +434,11 @@ clawdia broker "Research the top 5 AI agent frameworks and compare them"
 clawdia broker "Analyze market trends and write a report" --budget 2.0 --quality 0.80
 clawdia broker "Build a REST API" --dry-run   # plan without executing
 
+# Autonomous ML research loop (hypothesis → code → train → evaluate → log, repeat)
+clawdia research "Optimize the GPT training loop for lower validation loss" --iterations 10
+clawdia research "Lower validation BPB" --iterations 5 --baseline-bpb 3.142
+clawdia research "Improve convergence speed" --dry-run   # show plan without executing
+
 # Spawn an agent in a Docker container
 clawdia spawn ./soul.md
 
@@ -360,6 +484,76 @@ Test coverage by package:
 | soul.md manifests | Yes | No | No | No |
 
 Clawdia is not a workflow engine or prompt chaining library — it is the **economic and messaging infrastructure** that lets agents hire each other as autonomous service providers.
+
+---
+
+## 50+ Specialist Agents — Powered by agency-agents
+
+Clawdia's registry comes pre-loaded with **61 specialist agents** from the open-source [agency-agents](https://github.com/msitarzewski/agency-agents) collection. The moment the daemon boots, Clawdia can discover and hire experts across design, engineering, marketing, product, testing, and more — without any additional configuration.
+
+### Why this matters
+
+An orchestrator is only as powerful as the specialists in its registry. The more capable agents available, the more diverse the requests Clawdia can handle autonomously.
+
+When you send Clawdia a request like *"Build me a React landing page with animations"*, she:
+1. Decomposes the request into a workflow DAG
+2. Queries the registry for `design.ux.researcher`, `design.ui.designer`, `coding.frontend.developer`, `design.whimsy.injector`
+3. Hires each agent through a formal `TaskContract` with escrow
+4. Assembles the outputs into a coherent deliverable
+
+Without agency-agents, Clawdia would return "no agents found." With agency-agents, she orchestrates a full creative+engineering pipeline automatically.
+
+### Pre-loaded specialists (61 agents across 9 domains)
+
+| Domain | Taxonomy prefix | Agents |
+|--------|----------------|--------|
+| Engineering | `coding.*` | frontend-developer, backend-architect, ai-engineer, devops-automator, security-engineer, senior-developer, mobile-app-builder, rapid-prototyper |
+| Design | `design.*` | ui-designer, ux-researcher, ux-architect, brand-guardian, visual-storyteller, whimsy-injector, image-prompt-engineer |
+| Marketing | `marketing.*` | content-creator, growth-hacker, social-media-strategist, reddit-community-builder, app-store-optimizer, tiktok-strategist, twitter-engager, + 4 more |
+| Product | `product.*` | feedback-synthesizer, sprint-prioritizer, trend-researcher |
+| Project Management | `management.*` | project-shepherd, studio-producer, studio-operations, experiment-tracker, senior |
+| Testing | `testing.*` | accessibility-auditor, api-tester, performance-benchmarker, reality-checker, workflow-optimizer, + 3 more |
+| Support | `support.*` | support-responder, finance-tracker, legal-compliance-checker, infrastructure-maintainer, + 2 more |
+| Specialized | `specialized.*` | agents-orchestrator, agentic-identity-trust, lsp-index-engineer, data-analytics-reporter, + 3 more |
+| Spatial Computing | `spatial.*` | visionos-spatial-engineer, xr-immersive-developer, xr-interface-architect, macos-spatial-metal-engineer, + 2 more |
+
+### Getting started with agency-agents
+
+```bash
+# 1. Clone the agency-agents repo
+git clone https://github.com/msitarzewski/agency-agents /tmp/agency-agents
+
+# 2. Convert to soul.md v2 manifests (generates examples/agency-agents/)
+npx tsx scripts/import-agency-agents.ts
+
+# 3. Run the multi-agent demo — Clawdia brokers 4 specialists for a landing page
+npx tsx examples/agency-agents/demo.ts
+
+# 4. Start the daemon — agency-agents auto-load on boot
+npx tsx packages/orchestrator/src/daemon.ts
+```
+
+### Adding your own agents
+
+Any soul.md v2 manifest can be registered with Clawdia's registry:
+
+```typescript
+import { registerAgencyAgents } from "./examples/agency-agents/register-all.js";
+
+// In your daemon or orchestrator boot sequence:
+const result = registerAgencyAgents(registry);
+console.log(`Registered ${result.registered} agency-agents specialists`);
+
+// Or register a single custom agent:
+registry.register({
+  name: "my-specialist",
+  displayName: "My Custom Specialist",
+  capabilities: [{ taxonomy: "coding.my.skill", ... }],
+  // ...
+});
+```
+
+The Clawdia registry is open — any agent that registers with a valid capability taxonomy becomes immediately discoverable by Clawdia and any other orchestrator in the network.
 
 ---
 

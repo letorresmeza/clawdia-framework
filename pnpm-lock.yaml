@@ -44,6 +44,9 @@ importers:
       '@clawdia/plugin-runtime-docker':
         specifier: workspace:*
         version: link:../../plugins/runtime-docker
+      '@clawdia/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@clawdia/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -138,6 +141,31 @@ importers:
         version: 10.9.2(@types/node@22.7.5)(typescript@5.9.3)
       typescript:
         specifier: ^5.5.0
+        version: 5.9.3
+
+  examples/autoresearch:
+    dependencies:
+      '@clawdia/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@clawdia/economy':
+        specifier: workspace:*
+        version: link:../../packages/economy
+      '@clawdia/orchestrator':
+        specifier: workspace:*
+        version: link:../../packages/orchestrator
+      '@clawdia/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@clawdia/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+    devDependencies:
+      tsx:
+        specifier: ^4.7.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.4.0
         version: 5.9.3
 
   examples/demo:
@@ -4798,14 +4826,6 @@ snapshots:
     optionalDependencies:
       vite: 5.4.21(@types/node@20.19.35)
 
-  '@vitest/mocker@2.1.9(vite@5.4.21(@types/node@22.7.5))':
-    dependencies:
-      '@vitest/spy': 2.1.9
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 5.4.21(@types/node@22.7.5)
-
   '@vitest/pretty-format@2.1.9':
     dependencies:
       tinyrainbow: 1.2.0
@@ -7269,7 +7289,7 @@ snapshots:
   vitest@2.1.9(@types/node@22.7.5):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.7.5))
+      '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@20.19.35))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9

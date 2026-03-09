@@ -3,7 +3,7 @@
  *
  * Boots the full Clawdia Framework and runs indefinitely:
  *   - ClawBus (InMemoryBus, NATS-ready)
- *   - ServiceRegistry + 6 specialist agents
+ *   - ServiceRegistry + 6 core specialist agents + 61 agency-agents
  *   - ContractEngine + RiskEngine
  *   - Telegram notifier plugin
  *   - Web dashboard on port 3000 (status page)
@@ -16,6 +16,7 @@
  */
 
 import * as fs from "node:fs";
+import * as path from "node:path";
 import * as http from "node:http";
 import * as crypto from "node:crypto";
 import { InMemoryBus, ContractEngine, RiskEngine } from "@clawdia/core";
@@ -25,6 +26,40 @@ import { BrokerScheduler } from "./scheduler.js";
 import type { AgentIdentity, Notification } from "@clawdia/types";
 import type { INotifierPlugin } from "@clawdia/types";
 import type { ClawMessage } from "@clawdia/types";
+
+// ─────────────────────────────────────────────────────────
+// agency-agents loader — registers 61 specialist agents
+// ─────────────────────────────────────────────────────────
+
+const FRAMEWORK_ROOT_FROM_DAEMON = path.join(__dirname, "..", "..", "..", "..");
+const AGENCY_AGENTS_REGISTER = path.join(
+  FRAMEWORK_ROOT_FROM_DAEMON,
+  "examples",
+  "agency-agents",
+  "register-all.ts",
+);
+
+async function loadAgencyAgents(
+  registry: ServiceRegistry,
+): Promise<{ registered: number; identities: AgentIdentity[] }> {
+  // Dynamic import — resolve at runtime so the daemon doesn't hard-crash if the
+  // agency-agents manifest isn't present (it won't exist until the import script runs).
+  try {
+    // Resolve path relative to framework root → dist won't have register-all.ts,
+    // but the daemon is run via tsx so we can import the .ts file directly.
+    const registerAllPath = AGENCY_AGENTS_REGISTER;
+    if (!fs.existsSync(registerAllPath)) {
+      return { registered: 0, identities: [] };
+    }
+    const mod = await import(registerAllPath) as {
+      registerAgencyAgents: (r: ServiceRegistry) => { registered: number; identities: AgentIdentity[] };
+    };
+    return mod.registerAgencyAgents(registry);
+  } catch (err) {
+    // Non-fatal — daemon still boots without agency-agents
+    return { registered: 0, identities: [] };
+  }
+}
 
 // ─────────────────────────────────────────────────────────
 // Bootstrap: load credentials from known env files on disk
@@ -317,6 +352,7 @@ class BrokerDaemon {
   private heartbeatInterval?: NodeJS.Timeout;
   private watchdogInterval?: NodeJS.Timeout;
   private apiKey = "";
+  private agencyAgentNames: string[] = [];
 
   constructor() {
     this.contracts = new ContractEngine(this.bus);
@@ -376,14 +412,29 @@ class BrokerDaemon {
     // 6. Subscribe to all ClawBus channels for logging and Telegram routing
     this.subscribeToAllChannels();
 
-    // 7. Register Clawdia + all specialist agents
+    // 7. Register Clawdia + all core specialist agents
     this.registry.register(CLAWDIA_IDENTITY);
     for (const agent of SPECIALIST_AGENTS) {
       this.registry.register(agent);
     }
-    log("INFO", "daemon", `Registered ${1 + SPECIALIST_AGENTS.length} agents`, {
+    log("INFO", "daemon", `Registered ${1 + SPECIALIST_AGENTS.length} core agents`, {
       agents: [CLAWDIA_IDENTITY.name, ...SPECIALIST_AGENTS.map((a) => a.name)],
     });
+
+    // 7b. Auto-load agency-agents collection (61 specialist agents)
+    try {
+      const agencyResult = await loadAgencyAgents(this.registry);
+      if (agencyResult.registered > 0) {
+        this.agencyAgentNames = agencyResult.identities.map((a) => a.name);
+        log("INFO", "daemon", `Loaded ${agencyResult.registered} agency-agents specialist agents`, {
+          domains: [...new Set(agencyResult.identities.map((a) => a.capabilities[0]?.taxonomy.split(".")[0] ?? ""))],
+        });
+      } else {
+        log("WARN", "daemon", "agency-agents not loaded — run: npx tsx scripts/import-agency-agents.ts");
+      }
+    } catch (err) {
+      log("WARN", "daemon", `agency-agents load failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
 
     // 8. Start HTTP servers
     this.startDashboardServer();
@@ -416,6 +467,10 @@ class BrokerDaemon {
       for (const agent of allAgents) {
         this.registry.heartbeat(agent.name);
       }
+      // Also heartbeat agency-agents so they stay online
+      for (const name of this.agencyAgentNames) {
+        this.registry.heartbeat(name);
+      }
       // Update contract and registry stats in state
       const contractStats = this.contracts.stats() as Record<string, number>;
       const total = Object.values(contractStats).reduce((s, n) => s + n, 0);
@@ -428,18 +483,21 @@ class BrokerDaemon {
     this.heartbeatInterval?.unref();
 
     // 13. Send startup notification
+    const totalAgents = 1 + SPECIALIST_AGENTS.length + this.agencyAgentNames.length;
     await this.notifier
       .send({
         level: "info",
         title: "Clawdia Broker ONLINE",
-        body: `Daemon started. ${1 + SPECIALIST_AGENTS.length} agents registered. Dashboard: http://localhost:${PORT_DASHBOARD}`,
+        body: `Daemon started. ${totalAgents} agents registered (${this.agencyAgentNames.length} agency-agents specialists). Dashboard: http://localhost:${PORT_DASHBOARD}`,
       })
       .catch(() => { /* non-fatal */ });
 
     log("INFO", "daemon", "Boot complete", {
       dashboardPort: PORT_DASHBOARD,
       apiPort: PORT_API,
-      agents: 1 + SPECIALIST_AGENTS.length,
+      coreAgents: 1 + SPECIALIST_AGENTS.length,
+      agencyAgents: this.agencyAgentNames.length,
+      totalAgents,
     });
   }
 

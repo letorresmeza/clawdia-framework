@@ -10,6 +10,7 @@
     { "path": "../../packages/types" },
     { "path": "../../packages/core" },
     { "path": "../../packages/orchestrator" },
+    { "path": "../../packages/sdk" },
     { "path": "../../plugins/runtime-docker" }
   ]
 }

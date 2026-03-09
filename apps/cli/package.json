@@ -25,6 +25,7 @@
     "@clawdia/types": "workspace:*",
     "@clawdia/plugin-runtime-docker": "workspace:*",
     "@clawdia/plugin-agent-orchestrator": "workspace:*",
+    "@clawdia/sdk": "workspace:*",
     "commander": "^12.1.0",
     "chalk": "^5.3.0",
     "yaml": "^2.5.0"

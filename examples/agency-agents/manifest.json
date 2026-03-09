@@ -1,0 +1,372 @@
+{
+  "generatedAt": "2026-03-09T01:05:06.861Z",
+  "totalAgents": 61,
+  "agents": [
+    {
+      "domain": "design",
+      "agentName": "brand-guardian",
+      "taxonomy": "design.brand.guardian",
+      "outputPath": "examples/agency-agents/design/brand-guardian/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "image-prompt-engineer",
+      "taxonomy": "design.image.prompt.engineer",
+      "outputPath": "examples/agency-agents/design/image-prompt-engineer/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "ui-designer",
+      "taxonomy": "design.ui.designer",
+      "outputPath": "examples/agency-agents/design/ui-designer/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "ux-architect",
+      "taxonomy": "design.ux.architect",
+      "outputPath": "examples/agency-agents/design/ux-architect/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "ux-researcher",
+      "taxonomy": "design.ux.researcher",
+      "outputPath": "examples/agency-agents/design/ux-researcher/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "visual-storyteller",
+      "taxonomy": "design.visual.storyteller",
+      "outputPath": "examples/agency-agents/design/visual-storyteller/soul.md"
+    },
+    {
+      "domain": "design",
+      "agentName": "whimsy-injector",
+      "taxonomy": "design.whimsy.injector",
+      "outputPath": "examples/agency-agents/design/whimsy-injector/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "ai-engineer",
+      "taxonomy": "coding.ai.engineer",
+      "outputPath": "examples/agency-agents/engineering/ai-engineer/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "backend-architect",
+      "taxonomy": "coding.backend.architect",
+      "outputPath": "examples/agency-agents/engineering/backend-architect/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "devops-automator",
+      "taxonomy": "coding.devops.automator",
+      "outputPath": "examples/agency-agents/engineering/devops-automator/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "frontend-developer",
+      "taxonomy": "coding.frontend.developer",
+      "outputPath": "examples/agency-agents/engineering/frontend-developer/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "mobile-app-builder",
+      "taxonomy": "coding.mobile.app.builder",
+      "outputPath": "examples/agency-agents/engineering/mobile-app-builder/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "rapid-prototyper",
+      "taxonomy": "coding.rapid.prototyper",
+      "outputPath": "examples/agency-agents/engineering/rapid-prototyper/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "security-engineer",
+      "taxonomy": "coding.security.engineer",
+      "outputPath": "examples/agency-agents/engineering/security-engineer/soul.md"
+    },
+    {
+      "domain": "engineering",
+      "agentName": "senior-developer",
+      "taxonomy": "coding.senior.developer",
+      "outputPath": "examples/agency-agents/engineering/senior-developer/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "app-store-optimizer",
+      "taxonomy": "marketing.app.store.optimizer",
+      "outputPath": "examples/agency-agents/marketing/app-store-optimizer/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "content-creator",
+      "taxonomy": "marketing.content.creator",
+      "outputPath": "examples/agency-agents/marketing/content-creator/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "growth-hacker",
+      "taxonomy": "marketing.growth.hacker",
+      "outputPath": "examples/agency-agents/marketing/growth-hacker/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "instagram-curator",
+      "taxonomy": "marketing.instagram.curator",
+      "outputPath": "examples/agency-agents/marketing/instagram-curator/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "reddit-community-builder",
+      "taxonomy": "marketing.reddit.community.builder",
+      "outputPath": "examples/agency-agents/marketing/reddit-community-builder/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "social-media-strategist",
+      "taxonomy": "marketing.social.media.strategist",
+      "outputPath": "examples/agency-agents/marketing/social-media-strategist/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "tiktok-strategist",
+      "taxonomy": "marketing.tiktok.strategist",
+      "outputPath": "examples/agency-agents/marketing/tiktok-strategist/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "twitter-engager",
+      "taxonomy": "marketing.twitter.engager",
+      "outputPath": "examples/agency-agents/marketing/twitter-engager/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "wechat-official-account",
+      "taxonomy": "marketing.wechat.official.account",
+      "outputPath": "examples/agency-agents/marketing/wechat-official-account/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "xiaohongshu-specialist",
+      "taxonomy": "marketing.xiaohongshu.specialist",
+      "outputPath": "examples/agency-agents/marketing/xiaohongshu-specialist/soul.md"
+    },
+    {
+      "domain": "marketing",
+      "agentName": "zhihu-strategist",
+      "taxonomy": "marketing.zhihu.strategist",
+      "outputPath": "examples/agency-agents/marketing/zhihu-strategist/soul.md"
+    },
+    {
+      "domain": "product",
+      "agentName": "feedback-synthesizer",
+      "taxonomy": "product.feedback.synthesizer",
+      "outputPath": "examples/agency-agents/product/feedback-synthesizer/soul.md"
+    },
+    {
+      "domain": "product",
+      "agentName": "sprint-prioritizer",
+      "taxonomy": "product.sprint.prioritizer",
+      "outputPath": "examples/agency-agents/product/sprint-prioritizer/soul.md"
+    },
+    {
+      "domain": "product",
+      "agentName": "trend-researcher",
+      "taxonomy": "product.trend.researcher",
+      "outputPath": "examples/agency-agents/product/trend-researcher/soul.md"
+    },
+    {
+      "domain": "project-management",
+      "agentName": "experiment-tracker",
+      "taxonomy": "management.experiment.tracker",
+      "outputPath": "examples/agency-agents/project-management/experiment-tracker/soul.md"
+    },
+    {
+      "domain": "project-management",
+      "agentName": "project-shepherd",
+      "taxonomy": "management.project.shepherd",
+      "outputPath": "examples/agency-agents/project-management/project-shepherd/soul.md"
+    },
+    {
+      "domain": "project-management",
+      "agentName": "studio-operations",
+      "taxonomy": "management.studio.operations",
+      "outputPath": "examples/agency-agents/project-management/studio-operations/soul.md"
+    },
+    {
+      "domain": "project-management",
+      "agentName": "studio-producer",
+      "taxonomy": "management.studio.producer",
+      "outputPath": "examples/agency-agents/project-management/studio-producer/soul.md"
+    },
+    {
+      "domain": "project-management",
+      "agentName": "senior",
+      "taxonomy": "management.senior",
+      "outputPath": "examples/agency-agents/project-management/senior/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "macos-spatial-metal-engineer",
+      "taxonomy": "spatial.macos.spatial.metal.engineer",
+      "outputPath": "examples/agency-agents/spatial-computing/macos-spatial-metal-engineer/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "terminal-integration-specialist",
+      "taxonomy": "spatial.terminal.integration.specialist",
+      "outputPath": "examples/agency-agents/spatial-computing/terminal-integration-specialist/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "visionos-spatial-engineer",
+      "taxonomy": "spatial.visionos.spatial.engineer",
+      "outputPath": "examples/agency-agents/spatial-computing/visionos-spatial-engineer/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "xr-cockpit-interaction-specialist",
+      "taxonomy": "spatial.xr.cockpit.interaction.specialist",
+      "outputPath": "examples/agency-agents/spatial-computing/xr-cockpit-interaction-specialist/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "xr-immersive-developer",
+      "taxonomy": "spatial.xr.immersive.developer",
+      "outputPath": "examples/agency-agents/spatial-computing/xr-immersive-developer/soul.md"
+    },
+    {
+      "domain": "spatial-computing",
+      "agentName": "xr-interface-architect",
+      "taxonomy": "spatial.xr.interface.architect",
+      "outputPath": "examples/agency-agents/spatial-computing/xr-interface-architect/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "agentic-identity-trust",
+      "taxonomy": "specialized.agentic.identity.trust",
+      "outputPath": "examples/agency-agents/specialized/agentic-identity-trust/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "agents-orchestrator",
+      "taxonomy": "specialized.agents.orchestrator",
+      "outputPath": "examples/agency-agents/specialized/agents-orchestrator/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "data-analytics-reporter",
+      "taxonomy": "specialized.data.analytics.reporter",
+      "outputPath": "examples/agency-agents/specialized/data-analytics-reporter/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "data-consolidation-agent",
+      "taxonomy": "specialized.data.consolidation.agent",
+      "outputPath": "examples/agency-agents/specialized/data-consolidation-agent/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "lsp-index-engineer",
+      "taxonomy": "specialized.lsp.index.engineer",
+      "outputPath": "examples/agency-agents/specialized/lsp-index-engineer/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "report-distribution-agent",
+      "taxonomy": "specialized.report.distribution.agent",
+      "outputPath": "examples/agency-agents/specialized/report-distribution-agent/soul.md"
+    },
+    {
+      "domain": "specialized",
+      "agentName": "sales-data-extraction-agent",
+      "taxonomy": "specialized.sales.data.extraction.agent",
+      "outputPath": "examples/agency-agents/specialized/sales-data-extraction-agent/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "analytics-reporter",
+      "taxonomy": "support.analytics.reporter",
+      "outputPath": "examples/agency-agents/support/analytics-reporter/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "executive-summary-generator",
+      "taxonomy": "support.executive.summary.generator",
+      "outputPath": "examples/agency-agents/support/executive-summary-generator/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "finance-tracker",
+      "taxonomy": "support.finance.tracker",
+      "outputPath": "examples/agency-agents/support/finance-tracker/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "infrastructure-maintainer",
+      "taxonomy": "support.infrastructure.maintainer",
+      "outputPath": "examples/agency-agents/support/infrastructure-maintainer/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "legal-compliance-checker",
+      "taxonomy": "support.legal.compliance.checker",
+      "outputPath": "examples/agency-agents/support/legal-compliance-checker/soul.md"
+    },
+    {
+      "domain": "support",
+      "agentName": "support-responder",
+      "taxonomy": "support.support.responder",
+      "outputPath": "examples/agency-agents/support/support-responder/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "accessibility-auditor",
+      "taxonomy": "testing.accessibility.auditor",
+      "outputPath": "examples/agency-agents/testing/accessibility-auditor/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "api-tester",
+      "taxonomy": "testing.api.tester",
+      "outputPath": "examples/agency-agents/testing/api-tester/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "evidence-collector",
+      "taxonomy": "testing.evidence.collector",
+      "outputPath": "examples/agency-agents/testing/evidence-collector/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "performance-benchmarker",
+      "taxonomy": "testing.performance.benchmarker",
+      "outputPath": "examples/agency-agents/testing/performance-benchmarker/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "reality-checker",
+      "taxonomy": "testing.reality.checker",
+      "outputPath": "examples/agency-agents/testing/reality-checker/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "test-results-analyzer",
+      "taxonomy": "testing.test.results.analyzer",
+      "outputPath": "examples/agency-agents/testing/test-results-analyzer/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "tool-evaluator",
+      "taxonomy": "testing.tool.evaluator",
+      "outputPath": "examples/agency-agents/testing/tool-evaluator/soul.md"
+    },
+    {
+      "domain": "testing",
+      "agentName": "workflow-optimizer",
+      "taxonomy": "testing.workflow.optimizer",
+      "outputPath": "examples/agency-agents/testing/workflow-optimizer/soul.md"
+    }
+  ]
+}

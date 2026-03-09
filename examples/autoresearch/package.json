@@ -1,0 +1,22 @@
+{
+  "name": "@clawdia/example-autoresearch",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous ML research loop — Karpathy's autoresearch pattern as a multi-agent Clawdia workflow",
+  "scripts": {
+    "start": "tsx autoresearch.ts",
+    "start:quick": "tsx autoresearch.ts \"Optimize the GPT training loop for lower validation loss\" 5"
+  },
+  "dependencies": {
+    "@clawdia/core": "workspace:*",
+    "@clawdia/economy": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
+    "@clawdia/sdk": "workspace:*",
+    "@clawdia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
