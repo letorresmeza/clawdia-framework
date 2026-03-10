@@ -1,0 +1,129 @@
+{
+  "agents": [
+    {
+      "name": "Orion",
+      "role": "Operations Architect",
+      "status": "Hired",
+      "mode": "Live",
+      "utilization": 92,
+      "latency": 0.8,
+      "successRate": 99.1,
+      "spend": 1284,
+      "accent": "var(--accent-cyan)",
+      "owner": "Operations",
+      "permissions": ["deploy", "assign", "budget"],
+      "currentTask": "Syncing vendor deltas and reprioritizing onboarding queue",
+      "queueDepth": 9,
+      "lastActive": "26s ago"
+    },
+    {
+      "name": "Nyx",
+      "role": "Threat Sentinel",
+      "status": "Hired",
+      "mode": "Watching",
+      "utilization": 67,
+      "latency": 1.4,
+      "successRate": 97.8,
+      "spend": 642,
+      "accent": "var(--accent-green)",
+      "owner": "Security",
+      "permissions": ["audit", "alert", "escalate"],
+      "currentTask": "Investigating elevated auth requests across 3 workspaces",
+      "queueDepth": 4,
+      "lastActive": "09s ago"
+    },
+    {
+      "name": "Kite",
+      "role": "Revenue Optimizer",
+      "status": "Trial",
+      "mode": "Learning",
+      "utilization": 41,
+      "latency": 2.3,
+      "successRate": 91.4,
+      "spend": 390,
+      "accent": "var(--accent-amber)",
+      "owner": "Growth",
+      "permissions": ["recommend", "simulate"],
+      "currentTask": "Testing bid adjustments before wider rollout",
+      "queueDepth": 6,
+      "lastActive": "2m ago"
+    },
+    {
+      "name": "Vanta",
+      "role": "Workflow Conductor",
+      "status": "Available",
+      "mode": "Standby",
+      "utilization": 18,
+      "latency": 0.6,
+      "successRate": 98.6,
+      "spend": 212,
+      "accent": "var(--accent-white)",
+      "owner": "Platform",
+      "permissions": ["assign", "route"],
+      "currentTask": "Idle. Ready for orchestration assignment.",
+      "queueDepth": 0,
+      "lastActive": "7m ago"
+    }
+  ],
+  "events": [
+    {
+      "time": "09:42 UTC",
+      "title": "Nyx escalated an auth anomaly",
+      "detail": "Flagged 3 elevated-permission requests and routed approval to human ops."
+    },
+    {
+      "time": "09:18 UTC",
+      "title": "Orion closed a vendor sync",
+      "detail": "Published pricing deltas to procurement and refreshed hiring recommendations."
+    },
+    {
+      "time": "08:57 UTC",
+      "title": "Kite improved campaign yield",
+      "detail": "Rolled out a new bidding policy and lifted qualified conversions by 12.4%."
+    }
+  ],
+  "contracts": [
+    {
+      "team": "Ops",
+      "count": "04",
+      "description": "Incident routing, reporting, capacity checks"
+    },
+    {
+      "team": "Sales",
+      "count": "03",
+      "description": "Lead scoring, outbound drafting, renewal watch"
+    },
+    {
+      "team": "Finance",
+      "count": "02",
+      "description": "Spend guardrails, close prep"
+    },
+    {
+      "team": "Product",
+      "count": "03",
+      "description": "Spec triage, QA sweeps, release notes"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "Contract renewals",
+      "owner": "Orion",
+      "state": "Running"
+    },
+    {
+      "label": "Permission anomaly review",
+      "owner": "Nyx",
+      "state": "Blocked"
+    },
+    {
+      "label": "CAC model refresh",
+      "owner": "Kite",
+      "state": "Queued"
+    },
+    {
+      "label": "Cross-team workflow map",
+      "owner": "Vanta",
+      "state": "Ready"
+    }
+  ]
+}
