@@ -11,14 +11,16 @@ function createMockIdentity(name: string): AgentIdentity {
     version: "1.0.0",
     operator: "test-operator",
     publicKey: `ed25519:mock-key-${name}`,
-    capabilities: [{
-      taxonomy: "test.capability",
-      description: "A test capability",
-      inputSchema: { type: "object" },
-      outputSchema: { type: "object" },
-      sla: { maxLatencyMs: 5000, availability: 0.99 },
-      pricing: { model: "per_request" as const, amount: 1.0, currency: "USDC" },
-    }],
+    capabilities: [
+      {
+        taxonomy: "test.capability",
+        description: "A test capability",
+        inputSchema: { type: "object" },
+        outputSchema: { type: "object" },
+        sla: { maxLatencyMs: 5000, availability: 0.99 },
+        pricing: { model: "per_request" as const, amount: 1.0, currency: "USDC" },
+      },
+    ],
     requirements: [],
     runtime: { model: "test-model" },
   };
@@ -160,15 +162,37 @@ describe("ReputationEngine", () => {
   });
 
   describe("recordFailedContract", () => {
-    it("penalizes provider reliability and increments failures", () => {
+    it("penalizes provider reliability, increments failures, and slashes stake", () => {
       const provider = createMockIdentity("provider");
-      engine.initAgent("provider");
+      engine.initAgent("provider", 20);
       const contract = makeContract(createMockIdentity("requester"), provider);
       engine.recordFailedContract(contract);
 
       const rec = engine.getRecord("provider")!;
       expect(rec.contractsFailed).toBe(1);
       expect(rec.dimensions.reliability).toBeLessThan(0.5);
+      expect(rec.stakedAmount).toBe(18);
+    });
+  });
+
+  describe("stake management", () => {
+    it("adds stake to an agent record", () => {
+      engine.initAgent("agent-1", 10);
+      const record = engine.stake("agent-1", 5);
+      expect(record.stakedAmount).toBe(15);
+    });
+
+    it("removes stake from an agent record", () => {
+      engine.initAgent("agent-1", 10);
+      const record = engine.unstake("agent-1", 4);
+      expect(record.stakedAmount).toBe(6);
+    });
+
+    it("slashes stake and records the event", () => {
+      engine.initAgent("agent-1", 12);
+      const record = engine.slashStake("agent-1", 3, "contract-1", "manual ruling");
+      expect(record.stakedAmount).toBe(9);
+      expect(record.history.at(-1)?.reason).toContain("stake slashed");
     });
   });
 
@@ -244,11 +268,9 @@ describe("ReputationEngine", () => {
       const provider = createMockIdentity("provider");
       const contract = makeContract(requester, provider);
 
-      await bus.publish(
-        "settlement.complete",
-        { contract, action: "release" },
-        { name: "escrow" } as AgentIdentity,
-      );
+      await bus.publish("settlement.complete", { contract, action: "release" }, {
+        name: "escrow",
+      } as AgentIdentity);
 
       const rec = engine.getRecord("provider")!;
       expect(rec.contractsCompleted).toBe(1);

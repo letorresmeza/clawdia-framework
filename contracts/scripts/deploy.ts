@@ -6,6 +6,8 @@ import { ethers, network } from "hardhat";
  * Environment variables:
  *   USDC_ADDRESS          - USDC token address (required for non-local networks)
  *   DISPUTE_TIMEOUT_HOURS - default dispute timeout in hours (default: 24)
+ *   MIN_STAKE_USDC        - minimum registry stake in USDC (default: 10)
+ *   UNSTAKE_COOLDOWN_HOURS - registry unstake cooldown in hours (default: 24)
  *
  * Usage:
  *   pnpm deploy:local       (deploys MockUSDC + Factory on localhost)
@@ -54,7 +56,23 @@ async function main() {
   const factoryAddress = await factory.getAddress();
   console.log(`  EscrowFactory: ${factoryAddress}`);
 
-  // ── 3. Output deployment info ─────────────────────────────────────────────
+  // ── 3. AgentRegistry ──────────────────────────────────────────────────────
+
+  const minStakeUsdc = parseFloat(process.env["MIN_STAKE_USDC"] ?? "10");
+  const minStakeUnits = BigInt(Math.round(minStakeUsdc * 1_000_000));
+  const unstakeCooldownHours = parseInt(process.env["UNSTAKE_COOLDOWN_HOURS"] ?? "24", 10);
+  const unstakeCooldownSeconds = unstakeCooldownHours * 3600;
+  console.log(
+    `\nDeploying AgentRegistry (minimum stake: ${minStakeUsdc} USDC, cooldown: ${unstakeCooldownHours}h)...`,
+  );
+
+  const Registry = await ethers.getContractFactory("AgentRegistry");
+  const registry = await Registry.deploy(usdcAddress, minStakeUnits, unstakeCooldownSeconds);
+  await registry.waitForDeployment();
+  const registryAddress = await registry.getAddress();
+  console.log(`  AgentRegistry: ${registryAddress}`);
+
+  // ── 4. Output deployment info ─────────────────────────────────────────────
 
   const deploymentInfo = {
     network: network.name,
@@ -62,7 +80,10 @@ async function main() {
     deployer: deployer.address,
     usdc: usdcAddress,
     escrowFactory: factoryAddress,
+    agentRegistry: registryAddress,
     defaultTimeoutSeconds: timeoutSeconds,
+    minimumStakeUnits: minStakeUnits.toString(),
+    unstakeCooldownSeconds,
     deployedAt: new Date().toISOString(),
   };
 

@@ -13,6 +13,7 @@ import { registerRegistryCommand } from "../commands/registry.js";
 import { registerPublishCommand } from "../commands/publish.js";
 import { registerSearchCommand } from "../commands/search.js";
 import { registerHireCommand } from "../commands/hire.js";
+import { registerWalletCommand } from "../commands/wallet.js";
 import { ContractEngine } from "@clawdia/core";
 import type { AgentIdentity, ClawMessage } from "@clawdia/types";
 
@@ -118,6 +119,7 @@ function setupTestContext(): TestContext {
   registerPublishCommand(program, { identityRuntime, registry });
   registerSearchCommand(program, { registry });
   registerHireCommand(program, { bus, registry, contracts });
+  registerWalletCommand(program);
 
   const tmpDir = mkdtempSync(join(tmpdir(), "clawdia-test-"));
 
@@ -149,6 +151,7 @@ describe("CLI", () => {
 
   beforeEach(() => {
     ctx = setupTestContext();
+    process.env["CLAWDIA_WALLET_HOME"] = ctx.tmpDir;
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
       ctx.logs.push(args.map(String).join(" "));
     });
@@ -158,6 +161,7 @@ describe("CLI", () => {
   });
 
   afterEach(async () => {
+    delete process.env["CLAWDIA_WALLET_HOME"];
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
     await ctx.spawner.destroyAll();
@@ -275,6 +279,29 @@ describe("CLI", () => {
       await run(ctx, ["status", "--state", "dead"]);
       const output = ctx.logs.join("\n");
       expect(output).toContain("No sessions found");
+    });
+  });
+
+  describe("wallet", () => {
+    it("creates and lists wallets", async () => {
+      await run(ctx, ["wallet", "create", "operator", "--default"]);
+      expect(ctx.logs.join("\n")).toContain("Wallet created");
+      ctx.logs.length = 0;
+
+      await run(ctx, ["wallet", "list"]);
+      const output = ctx.logs.join("\n");
+      expect(output).toContain("operator");
+      expect(output).toContain("default");
+    });
+
+    it("imports and exports a wallet", async () => {
+      const privateKey = "0x59c6995e998f97a5a0044976f7d3f9b3e8b76d4e3f8b80b9dcd51cb07cdbcdaa";
+      await run(ctx, ["wallet", "import", "deployer", "--private-key", privateKey]);
+      expect(ctx.logs.join("\n")).toContain("Wallet imported");
+      ctx.logs.length = 0;
+
+      await run(ctx, ["wallet", "export", "deployer"]);
+      expect(ctx.logs.join("\n")).toContain(privateKey);
     });
   });
 
@@ -533,12 +560,16 @@ describe("CLI", () => {
       // Reset identity runtime to allow another registration
       const p2Ctx = setupTestContext();
       await p2Ctx.bus.connect();
-      consoleLogSpy.mockImplementation((...args: unknown[]) => p2Ctx.logs.push(args.map(String).join(" ")));
+      consoleLogSpy.mockImplementation((...args: unknown[]) =>
+        p2Ctx.logs.push(args.map(String).join(" ")),
+      );
       await p2Ctx.program.parseAsync(["node", "clawdia", "publish", p2]);
       expect(p2Ctx.logs.join("\n")).toContain("another-agent");
       await p2Ctx.bus.disconnect();
       p2Ctx.registry.destroy();
-      consoleLogSpy.mockImplementation((...args: unknown[]) => ctx.logs.push(args.map(String).join(" ")));
+      consoleLogSpy.mockImplementation((...args: unknown[]) =>
+        ctx.logs.push(args.map(String).join(" ")),
+      );
     });
   });
 
@@ -567,7 +598,7 @@ describe("CLI", () => {
             inputSchema: { type: "object" },
             outputSchema: { type: "object" },
             sla: { maxLatencyMs: 30000, availability: 0.95 },
-            pricing: { model: "per_request", amount: 0.50, currency: "USDC" },
+            pricing: { model: "per_request", amount: 0.5, currency: "USDC" },
           },
         ],
         requirements: [],
@@ -646,8 +677,11 @@ describe("CLI", () => {
 
     it("passes --input JSON to the contract", async () => {
       await run(ctx, [
-        "hire", "test-agent", "testing.unit",
-        "--input", '{"test_file":"src/index.ts"}',
+        "hire",
+        "test-agent",
+        "testing.unit",
+        "--input",
+        '{"test_file":"src/index.ts"}',
       ]);
       const contracts = ctx.contracts.list();
       expect(contracts.length).toBe(1);

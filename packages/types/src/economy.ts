@@ -39,7 +39,13 @@ export interface ReputationEvent {
 // Resource Marketplace types
 // ─────────────────────────────────────────────────────────
 
-export type ResourceType = "compute_gpu" | "compute_cpu" | "api_credits" | "data_feed" | "memory" | "context_window";
+export type ResourceType =
+  | "compute_gpu"
+  | "compute_cpu"
+  | "api_credits"
+  | "data_feed"
+  | "memory"
+  | "context_window";
 
 export interface ResourceListing {
   id: string;
@@ -88,6 +94,50 @@ export interface ResourcePriceInfo {
   base: number;
   utilization: number;
   activeListings: number;
+}
+
+export interface CapabilityOffer {
+  agentName: string;
+  operator: string;
+  capability: string;
+  description: string;
+  priceModel: string;
+  priceAmount: number;
+  currency: string;
+  availability: number;
+  maxLatencyMs: number;
+  reputationScore?: number;
+}
+
+export interface CapabilityAuctionRequest {
+  id: string;
+  capability: string;
+  requester: string;
+  maxBudget: number;
+  currency: string;
+  deadlineAt: string;
+  input?: unknown;
+}
+
+export interface CapabilityAuctionBid {
+  id: string;
+  auctionId: string;
+  agentName: string;
+  operator: string;
+  amount: number;
+  currency: string;
+  availability: number;
+  maxLatencyMs: number;
+  score: number;
+  submittedAt: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CapabilityAuctionResult {
+  auction: CapabilityAuctionRequest;
+  winningBid: CapabilityAuctionBid | null;
+  bids: CapabilityAuctionBid[];
+  closedAt: string;
 }
 
 export interface MarketplaceStats {

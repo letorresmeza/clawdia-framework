@@ -1,0 +1,37 @@
+{
+  "name": "@clawdia/plugin-runtime-wasm",
+  "version": "0.1.0",
+  "description": "WebAssembly runtime provider plugin for the Clawdia Framework",
+  "keywords": [
+    "clawdia",
+    "plugin",
+    "runtime",
+    "wasm",
+    "webassembly"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "plugins/runtime-wasm"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

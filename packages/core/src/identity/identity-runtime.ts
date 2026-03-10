@@ -23,7 +23,14 @@ const CapabilitySchema = z.object({
     availability: z.number().min(0).max(1),
   }),
   pricing: z.object({
-    model: z.enum(["per_request", "per_minute", "flat_rate", "per_token", "percentage_of_total"]),
+    model: z.enum([
+      "per_request",
+      "per_minute",
+      "flat_rate",
+      "per_token",
+      "percentage_of_total",
+      "subscription",
+    ]),
     amount: z.number().nonnegative(),
     currency: z.string(),
   }),
@@ -215,11 +222,7 @@ export class IdentityRuntime {
   }
 
   /** Verify a signature against a public key */
-  async verifySignature(
-    publicKey: string,
-    payload: string,
-    signature: string,
-  ): Promise<boolean> {
+  async verifySignature(publicKey: string, payload: string, signature: string): Promise<boolean> {
     try {
       const keyStr = publicKey.replace("ed25519:", "");
       const pubKeyBytes = Buffer.from(keyStr, "base64");

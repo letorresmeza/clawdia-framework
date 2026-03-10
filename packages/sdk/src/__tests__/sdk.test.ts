@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { InMemoryBus, ContractEngine } from "@clawdia/core";
 import { ServiceRegistry } from "@clawdia/orchestrator";
-import { createAgent, definePlugin } from "../index.js";
+import { createAgent, createWorkflowAgent, definePlugin } from "../index.js";
 import type { AgentTask } from "../index.js";
 
 // ─────────────────────────────────────────────────────────
@@ -305,6 +305,67 @@ describe("onTask handler", () => {
   });
 });
 
+describe("createWorkflowAgent()", () => {
+  it("composes multiple agents into a workflow agent", async () => {
+    const greeter = await createAgent({
+      soulMd: GREETER_SOUL,
+      bus,
+      registry,
+      contracts,
+      async onTask({ input }) {
+        const { name } = input as { name: string };
+        return { message: `Hello, ${name}!` };
+      },
+    });
+
+    const summarizer = await createAgent({
+      soulMd: SUMMARIZER_SOUL,
+      bus,
+      registry,
+      contracts,
+      async onTask({ input }) {
+        const { message } = input as { message: string };
+        return { summary: message.slice(0, 5) };
+      },
+    });
+
+    const workflow = await createWorkflowAgent({
+      soulMd: ORCHESTRATOR_SOUL,
+      bus,
+      registry,
+      contracts,
+      steps: [
+        {
+          agentName: "greeter-agent",
+          capability: "social.greeting",
+          payment: { amount: 0.01, currency: "USDC" },
+        },
+        {
+          agentName: "summarizer-agent",
+          capability: "nlp.summarize",
+          payment: { amount: 0.05, currency: "USDC" },
+          mapInput: (_input, results) => results[0]?.output,
+        },
+      ],
+    });
+
+    const result = await workflow.hire({
+      agentName: "orchestrator-agent",
+      capability: "orchestration.pipeline",
+      input: { name: "World" },
+      payment: { amount: 0.1, currency: "USDC" },
+    });
+
+    expect(result.output).toMatchObject({
+      finalOutput: { summary: "Hello" },
+    });
+
+    await workflow.stop();
+    await summarizer.stop();
+    await greeter.stop();
+  });
+});
+
 // ─────────────────────────────────────────────────────────
 // AgentHandle.hire() — full lifecycle
 // ─────────────────────────────────────────────────────────
@@ -489,11 +550,19 @@ describe("definePlugin()", () => {
       type: "runtime",
       create: () => ({
         name: "stub",
-        async spawn() { return { id: "x", name: "x", runtime: "stub" }; },
+        async spawn() {
+          return { id: "x", name: "x", runtime: "stub" };
+        },
         async destroy() {},
-        async exec() { return { stdout: "", stderr: "", exitCode: 0 }; },
-        logs(): AsyncIterable<string> { return (async function* () {})(); },
-        async healthCheck() { return { alive: true, uptime: 0 }; },
+        async exec() {
+          return { stdout: "", stderr: "", exitCode: 0 };
+        },
+        logs(): AsyncIterable<string> {
+          return (async function* () {})();
+        },
+        async healthCheck() {
+          return { alive: true, uptime: 0 };
+        },
       }),
     });
 
@@ -564,7 +633,7 @@ describe("multi-agent pipeline", () => {
       capability: "orchestration.pipeline",
       inputSchema: {},
       outputSchema: {},
-      payment: { amount: 0.10, currency: "USDC" },
+      payment: { amount: 0.1, currency: "USDC" },
       sla: { deadlineMs: 15_000, maxRetries: 1 },
       verification: { method: "schema_match" },
     });

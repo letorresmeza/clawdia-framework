@@ -2,7 +2,15 @@
   "name": "@clawdia/economy",
   "version": "0.1.0",
   "description": "Agent economy layer — reputation, escrow, marketplace, and billing for the Clawdia Framework",
-  "keywords": ["clawdia", "agent", "economy", "escrow", "reputation", "billing", "autonomous"],
+  "keywords": [
+    "clawdia",
+    "agent",
+    "economy",
+    "escrow",
+    "reputation",
+    "billing",
+    "autonomous"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/letorresmeza/clawdia-framework",
@@ -26,6 +34,7 @@
   "dependencies": {
     "@clawdia/types": "workspace:*",
     "@clawdia/core": "workspace:*",
+    "@clawdia/orchestrator": "workspace:*",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

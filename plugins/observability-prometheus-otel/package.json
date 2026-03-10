@@ -1,0 +1,37 @@
+{
+  "name": "@clawdia/plugin-observability-prometheus-otel",
+  "version": "0.1.0",
+  "description": "Prometheus and OpenTelemetry-style observability plugin for the Clawdia Framework",
+  "keywords": [
+    "clawdia",
+    "plugin",
+    "observability",
+    "prometheus",
+    "opentelemetry"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/letorresmeza/clawdia-framework",
+    "directory": "plugins/observability-prometheus-otel"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clawdia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "license": "MIT"
+}

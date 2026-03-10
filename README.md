@@ -41,6 +41,20 @@ pnpm tsx examples/quickstart.ts
 Contract abc-123 settled in 4ms
 ```
 
+### Runtime Environment
+
+Copy [.env.example](/root/clawdia-framework/.env.example) and set the runtime values you actually use.
+
+- `CLAWDIA_DAEMON_MODE=demo` keeps the current zero-infra daemon behavior. `CLAWDIA_DAEMON_MODE=prod` turns on stricter validation.
+- `CLAWDIA_BUS_PROVIDER=memory|nats` controls daemon transport. In `prod` mode, `nats` is required and `CLAWBUS_URL` is used for the connection.
+- `CLAWDIA_ENABLE_AGENCY_AGENTS=1` controls whether the daemon auto-loads the repo’s agency-agents bundle at boot.
+- `CLAWDIA_ALLOW_MOCK_IDENTITIES=1` is required in `prod` mode for now, because the built-in daemon identities are still scaffolded rather than externally provisioned.
+- `CLAWDIA_DATA_DIR` sets the daemon state directory. `CLAWDIA_API_KEY_FILE` defaults inside it, so API key persistence no longer assumes `/var/lib/clawdia`.
+- `CLAWDIA_IMPORT_LEGACY_STATE=1` re-enables one-time import of legacy local trading state from the old `clawdia-v3` paths. By default it is disabled.
+- `CLAWDIA_API_KEY` is required by the dashboard when calling the daemon API, and can also be provided directly to the daemon instead of relying on its generated on-disk key.
+- `CLAWDIA_DAEMON_URL` points the dashboard at the daemon API. The default is `http://127.0.0.1:3001`.
+- `CLAWDIA_LOAD_TELEGRAM_FROM_DISK=1` re-enables legacy Telegram credential discovery from local `/root/.../.env` files for development only. By default it is disabled.
+
 **Full multi-agent product launch workflow:**
 
 ```bash
@@ -207,7 +221,7 @@ npx tsx examples/orchestrator-agent/broker.ts "Analyze the market trends in AI i
 
 **Clawdia turns Karpathy's autoresearch pattern into a multi-agent orchestrated workflow.**
 
-The [autoresearch example](examples/autoresearch/) shows that Clawdia can orchestrate *any* autonomous loop — not just trading or content tasks. Each iteration of the ML research loop is decomposed into real TaskContracts, hired through the ServiceRegistry, and settled through the economy layer.
+The [autoresearch example](examples/autoresearch/) shows that Clawdia can orchestrate _any_ autonomous loop — not just trading or content tasks. Each iteration of the ML research loop is decomposed into real TaskContracts, hired through the ServiceRegistry, and settled through the economy layer.
 
 ```bash
 # Run the full autonomous research loop (10 iterations by default)
@@ -277,12 +291,12 @@ Step 2: Registering research specialist agents
 
 ### The Four Research Agents
 
-| Agent | Capability | Role |
-|-------|-----------|------|
-| [`research-hypothesis-agent`](examples/autoresearch/agents/research-hypothesis-agent/soul.md) | `research.ml.hypothesis` | Analyzes history, proposes next modification with rationale and confidence |
-| [`code-modifier-agent`](examples/autoresearch/agents/code-modifier-agent/soul.md) | `coding.ml.modify` | Implements the hypothesis in the training script, returns diff |
-| [`experiment-evaluator-agent`](examples/autoresearch/agents/experiment-evaluator-agent/soul.md) | `analysis.ml.evaluate` | Compares val_bpb to baseline, decides keep/discard, updates baseline |
-| [`experiment-logger-agent`](examples/autoresearch/agents/experiment-logger-agent/soul.md) | `data.experiment.log` | Appends to structured log, maintains leaderboard, extracts cumulative learnings |
+| Agent                                                                                           | Capability               | Role                                                                            |
+| ----------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------- |
+| [`research-hypothesis-agent`](examples/autoresearch/agents/research-hypothesis-agent/soul.md)   | `research.ml.hypothesis` | Analyzes history, proposes next modification with rationale and confidence      |
+| [`code-modifier-agent`](examples/autoresearch/agents/code-modifier-agent/soul.md)               | `coding.ml.modify`       | Implements the hypothesis in the training script, returns diff                  |
+| [`experiment-evaluator-agent`](examples/autoresearch/agents/experiment-evaluator-agent/soul.md) | `analysis.ml.evaluate`   | Compares val_bpb to baseline, decides keep/discard, updates baseline            |
+| [`experiment-logger-agent`](examples/autoresearch/agents/experiment-logger-agent/soul.md)       | `data.experiment.log`    | Appends to structured log, maintains leaderboard, extracts cumulative learnings |
 
 ### How the Research Loop Works
 
@@ -329,7 +343,7 @@ Four layers, each depending only on layers below:
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                    Plugin Ecosystem (L4)                     │
-│  agent-claude  runtime-docker  data-mcp  notifier-slack ...  │
+│  agent-orchestrator  runtime-docker  notifier-telegram ...   │
 ├──────────────────────────────────────────────────────────────┤
 │                  Orchestration Layer (L3)                    │
 │       ServiceRegistry             AgentSpawner               │
@@ -391,29 +405,32 @@ See [docs/architecture.md](docs/architecture.md) for detailed diagrams and data 
 
 Every integration point is swappable:
 
-| Slot | Interface | Provided |
-|------|-----------|---------|
-| Agent | `IAgentAdapter` | `agent-claude`, `agent-openai`, `agent-orchestrator` |
-| Runtime | `IRuntimeProvider` | `runtime-docker`, `runtime-tmux` |
-| Data | `IDataConnector` | `data-mcp`, `data-rss` |
-| Notifier | `INotifierPlugin` | `notifier-slack`, `notifier-telegram` |
-| Settlement | `ISettlementRail` | `settlement-evm` |
+| Slot       | Interface          | Provided                              |
+| ---------- | ------------------ | ------------------------------------- |
+| Agent      | `IAgentAdapter`    | `agent-orchestrator`, `agent-trading` |
+| Runtime    | `IRuntimeProvider` | `runtime-docker`                      |
+| Data       | `IDataConnector`   | none implemented in-repo yet          |
+| Notifier   | `INotifierPlugin`  | `notifier-telegram`                   |
+| Settlement | `ISettlementRail`  | `settlement-evm`                      |
+
+Placeholder packages currently present but not implemented:
+`agent-claude`, `agent-openai`, `data-mcp`, `data-rss`, `runtime-tmux`, `notifier-slack`
 
 ---
 
 ## Packages
 
-| Package | Version | Description |
-|---------|---------|-------------|
-| [`@clawdia/types`](packages/types) | 0.1.0 | Shared TypeScript types and plugin interfaces |
-| [`@clawdia/core`](packages/core) | 0.1.0 | Identity, ClawBus, ContractEngine, RiskEngine |
-| [`@clawdia/orchestrator`](packages/orchestrator) | 0.1.0 | ServiceRegistry and AgentSpawner |
-| [`@clawdia/economy`](packages/economy) | 0.1.0 | Reputation, escrow, billing |
-| [`@clawdia/sdk`](packages/sdk) | 0.1.0 | `createAgent()` and `definePlugin()` helpers |
-| [`@clawdia/cli`](apps/cli) | 0.1.0 | `clawdia publish / search / hire / spawn` |
-| [`@clawdia/dashboard`](apps/dashboard) | 0.1.0 | Next.js monitoring dashboard |
-| [`@clawdia/plugin-runtime-docker`](plugins/runtime-docker) | 0.1.0 | Docker container runtime |
-| [`@clawdia/plugin-agent-orchestrator`](plugins/agent-orchestrator) | 0.1.0 | Clawdia broker: TaskDecomposer, AgentMatcher, WorkflowExecutor, OutputAssembler |
+| Package                                                            | Version | Description                                                                     |
+| ------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
+| [`@clawdia/types`](packages/types)                                 | 0.1.0   | Shared TypeScript types and plugin interfaces                                   |
+| [`@clawdia/core`](packages/core)                                   | 0.1.0   | Identity, ClawBus, ContractEngine, RiskEngine                                   |
+| [`@clawdia/orchestrator`](packages/orchestrator)                   | 0.1.0   | ServiceRegistry and AgentSpawner                                                |
+| [`@clawdia/economy`](packages/economy)                             | 0.1.0   | Reputation, escrow, billing                                                     |
+| [`@clawdia/sdk`](packages/sdk)                                     | 0.1.0   | `createAgent()` and `definePlugin()` helpers                                    |
+| [`@clawdia/cli`](apps/cli)                                         | 0.1.0   | `clawdia publish / search / hire / spawn`                                       |
+| [`@clawdia/dashboard`](apps/dashboard)                             | 0.1.0   | Next.js monitoring dashboard                                                    |
+| [`@clawdia/plugin-runtime-docker`](plugins/runtime-docker)         | 0.1.0   | Docker container runtime                                                        |
+| [`@clawdia/plugin-agent-orchestrator`](plugins/agent-orchestrator) | 0.1.0   | Clawdia broker: TaskDecomposer, AgentMatcher, WorkflowExecutor, OutputAssembler |
 
 ---
 
@@ -458,30 +475,30 @@ pnpm --filter @clawdia/sdk test       # SDK tests
 
 Test coverage by package:
 
-| Package | Tests |
-|---------|-------|
-| `@clawdia/core` | 73 |
-| `@clawdia/orchestrator` | 35 |
-| `@clawdia/economy` | 56 |
-| `@clawdia/sdk` | 16 |
-| `@clawdia/cli` | 43 |
-| `@clawdia/plugin-runtime-docker` | 14 |
-| **Total** | **237** |
+| Package                          | Tests   |
+| -------------------------------- | ------- |
+| `@clawdia/core`                  | 73      |
+| `@clawdia/orchestrator`          | 35      |
+| `@clawdia/economy`               | 56      |
+| `@clawdia/sdk`                   | 16      |
+| `@clawdia/cli`                   | 43      |
+| `@clawdia/plugin-runtime-docker` | 14      |
+| **Total**                        | **237** |
 
 ---
 
 ## Comparison
 
-| Feature | Clawdia | LangGraph | CrewAI | AutoGen |
-|---------|---------|-----------|--------|---------|
-| Agent discovery & registry | Yes | No | No | No |
-| Formal task contracts | Yes | No | No | No |
-| Agent payments & escrow | Yes | No | No | No |
-| Reputation system | Yes | No | No | No |
-| Plugin system | Yes | Partial | No | No |
-| Swappable bus (NATS/memory) | Yes | No | No | No |
-| TypeScript-first | Yes | Partial | No | Partial |
-| soul.md manifests | Yes | No | No | No |
+| Feature                     | Clawdia | LangGraph | CrewAI | AutoGen |
+| --------------------------- | ------- | --------- | ------ | ------- |
+| Agent discovery & registry  | Yes     | No        | No     | No      |
+| Formal task contracts       | Yes     | No        | No     | No      |
+| Agent payments & escrow     | Yes     | No        | No     | No      |
+| Reputation system           | Yes     | No        | No     | No      |
+| Plugin system               | Yes     | Partial   | No     | No      |
+| Swappable bus (NATS/memory) | Yes     | No        | No     | No      |
+| TypeScript-first            | Yes     | Partial   | No     | Partial |
+| soul.md manifests           | Yes     | No        | No     | No      |
 
 Clawdia is not a workflow engine or prompt chaining library — it is the **economic and messaging infrastructure** that lets agents hire each other as autonomous service providers.
 
@@ -495,7 +512,8 @@ Clawdia's registry comes pre-loaded with **61 specialist agents** from the open-
 
 An orchestrator is only as powerful as the specialists in its registry. The more capable agents available, the more diverse the requests Clawdia can handle autonomously.
 
-When you send Clawdia a request like *"Build me a React landing page with animations"*, she:
+When you send Clawdia a request like _"Build me a React landing page with animations"_, she:
+
 1. Decomposes the request into a workflow DAG
 2. Queries the registry for `design.ux.researcher`, `design.ui.designer`, `coding.frontend.developer`, `design.whimsy.injector`
 3. Hires each agent through a formal `TaskContract` with escrow
@@ -505,17 +523,17 @@ Without agency-agents, Clawdia would return "no agents found." With agency-agent
 
 ### Pre-loaded specialists (61 agents across 9 domains)
 
-| Domain | Taxonomy prefix | Agents |
-|--------|----------------|--------|
-| Engineering | `coding.*` | frontend-developer, backend-architect, ai-engineer, devops-automator, security-engineer, senior-developer, mobile-app-builder, rapid-prototyper |
-| Design | `design.*` | ui-designer, ux-researcher, ux-architect, brand-guardian, visual-storyteller, whimsy-injector, image-prompt-engineer |
-| Marketing | `marketing.*` | content-creator, growth-hacker, social-media-strategist, reddit-community-builder, app-store-optimizer, tiktok-strategist, twitter-engager, + 4 more |
-| Product | `product.*` | feedback-synthesizer, sprint-prioritizer, trend-researcher |
-| Project Management | `management.*` | project-shepherd, studio-producer, studio-operations, experiment-tracker, senior |
-| Testing | `testing.*` | accessibility-auditor, api-tester, performance-benchmarker, reality-checker, workflow-optimizer, + 3 more |
-| Support | `support.*` | support-responder, finance-tracker, legal-compliance-checker, infrastructure-maintainer, + 2 more |
-| Specialized | `specialized.*` | agents-orchestrator, agentic-identity-trust, lsp-index-engineer, data-analytics-reporter, + 3 more |
-| Spatial Computing | `spatial.*` | visionos-spatial-engineer, xr-immersive-developer, xr-interface-architect, macos-spatial-metal-engineer, + 2 more |
+| Domain             | Taxonomy prefix | Agents                                                                                                                                               |
+| ------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engineering        | `coding.*`      | frontend-developer, backend-architect, ai-engineer, devops-automator, security-engineer, senior-developer, mobile-app-builder, rapid-prototyper      |
+| Design             | `design.*`      | ui-designer, ux-researcher, ux-architect, brand-guardian, visual-storyteller, whimsy-injector, image-prompt-engineer                                 |
+| Marketing          | `marketing.*`   | content-creator, growth-hacker, social-media-strategist, reddit-community-builder, app-store-optimizer, tiktok-strategist, twitter-engager, + 4 more |
+| Product            | `product.*`     | feedback-synthesizer, sprint-prioritizer, trend-researcher                                                                                           |
+| Project Management | `management.*`  | project-shepherd, studio-producer, studio-operations, experiment-tracker, senior                                                                     |
+| Testing            | `testing.*`     | accessibility-auditor, api-tester, performance-benchmarker, reality-checker, workflow-optimizer, + 3 more                                            |
+| Support            | `support.*`     | support-responder, finance-tracker, legal-compliance-checker, infrastructure-maintainer, + 2 more                                                    |
+| Specialized        | `specialized.*` | agents-orchestrator, agentic-identity-trust, lsp-index-engineer, data-analytics-reporter, + 3 more                                                   |
+| Spatial Computing  | `spatial.*`     | visionos-spatial-engineer, xr-immersive-developer, xr-interface-architect, macos-spatial-metal-engineer, + 2 more                                    |
 
 ### Getting started with agency-agents
 
@@ -575,35 +593,37 @@ The Clawdia registry is open — any agent that registers with a valid capabilit
 
 ### Phase 2 — On-Chain Escrow (v0.2.0)
 
-- [ ] EVM settlement rail (`settlement-evm`) — USDC on Base
-- [ ] On-chain contract registry (EVM)
-- [ ] Staking for reputation — slash on SLA violations
-- [ ] NATS JetStream for durable message delivery
-- [ ] Agent wallet management CLI
-- [ ] Mainnet deployment guide
+- [x] EVM settlement rail (`settlement-evm`) — USDC on Base
+- [x] On-chain contract registry (EVM)
+- [x] Staking for reputation — slash on SLA violations
+- [x] NATS JetStream for durable message delivery
+- [x] Agent wallet management CLI
+- [x] Mainnet deployment guide
 
 ### Phase 3 — Resource Marketplace (v0.3.0)
 
-- [ ] Capability marketplace — search across operators
-- [ ] Auction-based contract negotiation
-- [ ] Subscription pricing model support
-- [ ] Agent composition (workflows as first-class agents)
-- [ ] WebAssembly runtime plugin
-- [ ] Prometheus + OpenTelemetry observability
-- [ ] Multi-tenant operator dashboard
+- [x] Capability marketplace — search across operators
+- [x] Auction-based contract negotiation
+- [x] Subscription pricing model support
+- [x] Agent composition (workflows as first-class agents)
+- [x] WebAssembly runtime plugin
+- [x] Prometheus + OpenTelemetry observability
+- [x] Multi-tenant operator dashboard
 
 ---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Getting Started](docs/getting-started.md) | 5-minute quickstart from install to first agent |
-| [Architecture](docs/architecture.md) | System overview with layer diagrams and data flow |
-| [soul.md Spec](docs/soul-md-spec.md) | Complete manifest format reference |
+| Document                                     | Description                                          |
+| -------------------------------------------- | ---------------------------------------------------- |
+| [Getting Started](docs/getting-started.md)   | 5-minute quickstart from install to first agent      |
+| [Architecture](docs/architecture.md)         | System overview with layer diagrams and data flow    |
+| [soul.md Spec](docs/soul-md-spec.md)         | Complete manifest format reference                   |
 | [Building Plugins](docs/building-plugins.md) | Create agent adapters, runtimes, and data connectors |
-| [API Reference](docs/api-reference.md) | Full API docs for all packages |
-| [Contributing](CONTRIBUTING.md) | PR process, code conventions, plugin guidelines |
+| [On-Chain Deployment](docs/on-chain-deployment.md) | Base escrow, registry, staking, and wallet setup |
+| [Phase 3 Marketplace](docs/phase-3-marketplace.md) | Capability market, auctions, workflow agents, and tenants |
+| [API Reference](docs/api-reference.md)       | Full API docs for all packages                       |
+| [Contributing](CONTRIBUTING.md)              | PR process, code conventions, plugin guidelines      |
 
 ---
 

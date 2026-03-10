@@ -1,5 +1,6 @@
 // ─── Core SDK helpers ───────────────────────────────────────────────────────
 export { createAgent } from "./create-agent.js";
+export { createWorkflowAgent } from "./workflow-agent.js";
 export type {
   CreateAgentOptions,
   AgentHandle,
@@ -8,6 +9,7 @@ export type {
   HireOptions,
   HireResult,
 } from "./create-agent.js";
+export type { CreateWorkflowAgentOptions, WorkflowAgentStep } from "./workflow-agent.js";
 
 export { definePlugin } from "./define-plugin.js";
 

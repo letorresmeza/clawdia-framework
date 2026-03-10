@@ -55,6 +55,8 @@ export interface RegistryQuery {
   maxPrice?: number;
   /** Currency filter */
   currency?: string;
+  /** Operator / tenant filter */
+  operator?: string;
   /** Only return online agents */
   onlineOnly?: boolean;
   /** Maximum results */
@@ -113,13 +115,16 @@ export interface WorkflowExecution {
   workflowId: string;
   state: WorkflowState;
   /** Per-step execution state */
-  stepStates: Map<string, {
-    state: "pending" | "running" | "completed" | "failed" | "skipped";
-    output?: unknown;
-    error?: string;
-    startedAt?: string;
-    completedAt?: string;
-  }>;
+  stepStates: Map<
+    string,
+    {
+      state: "pending" | "running" | "completed" | "failed" | "skipped";
+      output?: unknown;
+      error?: string;
+      startedAt?: string;
+      completedAt?: string;
+    }
+  >;
   startedAt: string;
   completedAt?: string;
 }

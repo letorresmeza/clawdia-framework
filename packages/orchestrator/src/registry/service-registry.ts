@@ -33,12 +33,16 @@ export class ServiceRegistry {
     this.resetDeregisterTimer(identity.name);
 
     // Publish registry update
-    this.bus?.publish("registry.update", {
-      agentName: identity.name,
-      action: "register",
+    this.bus?.publish(
+      "registry.update",
+      {
+        agentName: identity.name,
+        action: "register",
+        identity,
+        status: "online",
+      },
       identity,
-      status: "online",
-    }, identity);
+    );
   }
 
   /** Discover agents matching a query */
@@ -52,9 +56,7 @@ export class ServiceRegistry {
 
     // Taxonomy filter (supports * wildcard at end)
     if (query.taxonomy) {
-      const pattern = query.taxonomy.endsWith("*")
-        ? query.taxonomy.slice(0, -1)
-        : query.taxonomy;
+      const pattern = query.taxonomy.endsWith("*") ? query.taxonomy.slice(0, -1) : query.taxonomy;
       const isWildcard = query.taxonomy.endsWith("*");
 
       results = results.filter((e) =>
@@ -77,6 +79,13 @@ export class ServiceRegistry {
         e.identity.capabilities.some(
           (c) => c.pricing.currency.toLowerCase() === query.currency!.toLowerCase(),
         ),
+      );
+    }
+
+    // Operator / tenant filter
+    if (query.operator) {
+      results = results.filter(
+        (e) => e.identity.operator.toLowerCase() === query.operator!.toLowerCase(),
       );
     }
 
@@ -133,10 +142,14 @@ export class ServiceRegistry {
 
     const entry = this.entries.get(agentName);
     if (entry) {
-      this.bus?.publish("registry.update", {
-        agentName,
-        action: "deregister",
-      }, entry.identity);
+      this.bus?.publish(
+        "registry.update",
+        {
+          agentName,
+          action: "deregister",
+        },
+        entry.identity,
+      );
     }
 
     return this.entries.delete(agentName);

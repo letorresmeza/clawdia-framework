@@ -22,6 +22,7 @@
     "test:gas": "REPORT_GAS=true hardhat test",
     "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
     "deploy:baseSepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "deploy:baseMainnet": "hardhat run scripts/deploy.ts --network baseMainnet",
     "node": "hardhat node"
   },
   "devDependencies": {

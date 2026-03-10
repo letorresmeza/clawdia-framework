@@ -1,16 +1,28 @@
 import { NextResponse } from "next/server";
-import { getEngines } from "@/lib/engines";
+import type { NextRequest } from "next/server";
+import { fetchContracts, fetchRegistryEntries } from "@/lib/daemon-client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request?: NextRequest): Promise<NextResponse> {
   try {
-    const { contracts, registry, bus } = await getEngines();
+    const tenant = request?.nextUrl.searchParams.get("tenant");
+    const [allContracts, registryEntries] = await Promise.all([
+      fetchContracts(),
+      fetchRegistryEntries(),
+    ]);
+    const tenantContracts = allContracts.filter((contract) =>
+      tenant
+        ? contract.requester.operator === tenant || contract.provider?.operator === tenant
+        : true,
+    );
+    const tenantRegistryEntries = registryEntries.filter((entry) =>
+      tenant ? entry.identity.operator === tenant : true,
+    );
 
     // Collect workflow-related contracts (capability starts with "orchestration.")
-    const allContracts = contracts.list();
-    const orchestrationContracts = allContracts.filter(
-      (c) => c.capability.startsWith("orchestration."),
+    const orchestrationContracts = tenantContracts.filter((c) =>
+      c.capability.startsWith("orchestration."),
     );
 
     // Active workflows: in_progress
@@ -40,12 +52,20 @@ export async function GET(): Promise<NextResponse> {
     }
 
     // Agent utilization: count contracts per provider
-    const agentContractCounts = new Map<string, { completed: number; failed: number; totalQuality: number; qualityCount: number }>();
+    const agentContractCounts = new Map<
+      string,
+      { completed: number; failed: number; totalQuality: number; qualityCount: number }
+    >();
 
-    for (const c of allContracts) {
+    for (const c of tenantContracts) {
       if (!c.provider) continue;
       const name = c.provider.name;
-      const existing = agentContractCounts.get(name) ?? { completed: 0, failed: 0, totalQuality: 0, qualityCount: 0 };
+      const existing = agentContractCounts.get(name) ?? {
+        completed: 0,
+        failed: 0,
+        totalQuality: 0,
+        qualityCount: 0,
+      };
 
       if (c.state === "settled") {
         existing.completed++;
@@ -67,7 +87,8 @@ export async function GET(): Promise<NextResponse> {
         agentName,
         tasksCompleted: stats.completed,
         tasksFailed: stats.failed,
-        averageQualityScore: stats.qualityCount > 0 ? stats.totalQuality / stats.qualityCount : null,
+        averageQualityScore:
+          stats.qualityCount > 0 ? stats.totalQuality / stats.qualityCount : null,
         successRate:
           stats.completed + stats.failed > 0
             ? stats.completed / (stats.completed + stats.failed)
@@ -81,9 +102,10 @@ export async function GET(): Promise<NextResponse> {
       .sort((a, b) => (b.averageQualityScore ?? 0) - (a.averageQualityScore ?? 0));
 
     // Registry stats (specialists vs broker)
-    const registryEntries = registry.list();
-    const brokerEntry = registryEntries.find((e) => e.identity.capabilities.some((c) => c.taxonomy.startsWith("orchestration.")));
-    const specialistCount = registryEntries.filter((e) => e !== brokerEntry).length;
+    const brokerEntry = tenantRegistryEntries.find((e) =>
+      e.identity.capabilities.some((c) => c.taxonomy.startsWith("orchestration.")),
+    );
+    const specialistCount = tenantRegistryEntries.filter((e) => e !== brokerEntry).length;
 
     // Active workflow progress from in-progress contracts
     const activeWorkflows = activeContracts.map((c) => ({
@@ -128,7 +150,8 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json({
       summary: {
         activeWorkflows: activeContracts.length,
-        completedJobs: settledContracts.filter((c) => c.capability === "orchestration.job.broker").length,
+        completedJobs: settledContracts.filter((c) => c.capability === "orchestration.job.broker")
+          .length,
         totalBrokeredUsdc,
         totalMarginUsdc,
         registeredSpecialists: specialistCount,
@@ -138,7 +161,10 @@ export async function GET(): Promise<NextResponse> {
       recentJobs,
       agentUtilization,
       qualityByAgent,
-      contractStats: contracts.stats(),
+      contractStats: tenantContracts.reduce<Record<string, number>>((acc, contract) => {
+        acc[contract.state] = (acc[contract.state] ?? 0) + 1;
+        return acc;
+      }, {}),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

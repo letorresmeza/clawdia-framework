@@ -206,6 +206,13 @@ describe("ServiceRegistry", () => {
       expect(entries[0]!.identity.name).toBe("analyst");
     });
 
+    it("filters by operator", () => {
+      registry.register(makeIdentity("tenant-agent", { operator: "tenant-b" }));
+      const { entries } = registry.discover({ operator: "tenant-b" });
+      expect(entries.length).toBe(1);
+      expect(entries[0]!.identity.name).toBe("tenant-agent");
+    });
+
     it("filters by minReputation", () => {
       // Give coder a reputation score
       const entry = registry.get("coder")!;

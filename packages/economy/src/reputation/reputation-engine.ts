@@ -17,6 +17,8 @@ export interface ReputationConfig {
   minimumStake: number;
   /** Currency for stake. Default "USDC" */
   stakeCurrency: string;
+  /** Percent of stake slashed on failed contracts with SLA violations. Default 0.1 */
+  slashRate: number;
 }
 
 const DEFAULT_CONFIG: ReputationConfig = {
@@ -24,6 +26,7 @@ const DEFAULT_CONFIG: ReputationConfig = {
   recentWeight: 2.0,
   minimumStake: 10,
   stakeCurrency: "USDC",
+  slashRate: 0.1,
 };
 
 type Dimension = "reliability" | "quality" | "speed" | "costEfficiency";
@@ -89,6 +92,64 @@ export class ReputationEngine {
     return { ...record };
   }
 
+  /** Add stake to an agent's record. */
+  stake(agentName: string, amount: number): ReputationRecord {
+    if (amount <= 0) {
+      throw new Error("Stake amount must be greater than 0");
+    }
+
+    let record = this.records.get(agentName);
+    if (!record) {
+      record = this.initAgent(agentName);
+    }
+
+    record.stakedAmount += amount;
+    record.updatedAt = new Date().toISOString();
+    return this.getRecord(agentName)!;
+  }
+
+  /** Remove unlocked stake from an agent's record. */
+  unstake(agentName: string, amount: number): ReputationRecord {
+    if (amount <= 0) {
+      throw new Error("Unstake amount must be greater than 0");
+    }
+
+    const record = this.records.get(agentName);
+    if (!record) {
+      throw new Error(`Agent "${agentName}" not found`);
+    }
+    if (record.stakedAmount < amount) {
+      throw new Error(`Agent "${agentName}" does not have enough stake`);
+    }
+
+    record.stakedAmount -= amount;
+    record.updatedAt = new Date().toISOString();
+    return this.getRecord(agentName)!;
+  }
+
+  /** Slash stake after an SLA failure or dispute ruling. */
+  slashStake(agentName: string, amount: number, contractId: string, reason: string): ReputationRecord {
+    if (amount <= 0) {
+      throw new Error("Slash amount must be greater than 0");
+    }
+
+    let record = this.records.get(agentName);
+    if (!record) {
+      record = this.initAgent(agentName);
+    }
+
+    record.stakedAmount = Math.max(0, record.stakedAmount - amount);
+    record.updatedAt = new Date().toISOString();
+    record.history.push({
+      contractId,
+      dimension: "reliability",
+      delta: -1,
+      reason: `stake slashed: ${reason}`,
+      timestamp: record.updatedAt,
+    });
+    return this.getRecord(agentName)!;
+  }
+
   /**
    * Update an agent's reputation across dimensions.
    * Each dimension delta should be in range [-1.0, 1.0].
@@ -126,8 +187,7 @@ export class ReputationEngine {
 
     // Recalculate overall score as average of dimensions
     const dims = record.dimensions;
-    record.overallScore =
-      (dims.reliability + dims.quality + dims.speed + dims.costEfficiency) / 4;
+    record.overallScore = (dims.reliability + dims.quality + dims.speed + dims.costEfficiency) / 4;
     record.updatedAt = now;
   }
 
@@ -174,6 +234,11 @@ export class ReputationEngine {
       reliability: -1.0,
       quality: -0.5,
     });
+
+    const slashAmount = providerRecord.stakedAmount * this.config.slashRate;
+    if (slashAmount > 0) {
+      this.slashStake(providerName, slashAmount, contract.id, "SLA violation");
+    }
   }
 
   /** Check if an agent meets the minimum stake requirement */
@@ -203,12 +268,8 @@ export class ReputationEngine {
     const records = Array.from(this.records.values());
     const totalAgents = records.length;
     const averageScore =
-      totalAgents > 0
-        ? records.reduce((sum, r) => sum + r.overallScore, 0) / totalAgents
-        : 0;
-    const aboveThreshold = records.filter(
-      (r) => r.stakedAmount >= this.config.minimumStake,
-    ).length;
+      totalAgents > 0 ? records.reduce((sum, r) => sum + r.overallScore, 0) / totalAgents : 0;
+    const aboveThreshold = records.filter((r) => r.stakedAmount >= this.config.minimumStake).length;
     return { totalAgents, averageScore, aboveThreshold };
   }
 

@@ -6,5 +6,21 @@ export { InMemoryEscrow } from "./escrow/in-memory-escrow.js";
 export { BillingEngine } from "./billing/billing-engine.js";
 export type { BillingConfig } from "./billing/billing-engine.js";
 
-export { ResourceMarketplace, OrderBook, PricingEngine, BASE_PRICES, RESOURCE_UNITS } from "./marketplace/index.js";
-export type { MarketplaceConfig, PricingConfig, ListResourceParams, PlaceOrderParams, OrderFill } from "./marketplace/index.js";
+export {
+  ResourceMarketplace,
+  CapabilityMarketplace,
+  AuctionNegotiator,
+  OrderBook,
+  PricingEngine,
+  BASE_PRICES,
+  RESOURCE_UNITS,
+} from "./marketplace/index.js";
+export type {
+  MarketplaceConfig,
+  CapabilitySearchQuery,
+  AuctionBidInput,
+  PricingConfig,
+  ListResourceParams,
+  PlaceOrderParams,
+  OrderFill,
+} from "./marketplace/index.js";

@@ -15,7 +15,7 @@ function makeSoulMd(overrides: Record<string, unknown> = {}): string {
       description: "A test agent",
       version: "1.0.0",
       operator: "test-operator",
-      ...(overrides.identity as Record<string, unknown> ?? {}),
+      ...((overrides.identity as Record<string, unknown>) ?? {}),
     },
     capabilities: {
       provides: [
@@ -28,13 +28,13 @@ function makeSoulMd(overrides: Record<string, unknown> = {}): string {
           pricing: { model: "per_request", amount: 1.0, currency: "USDC" },
         },
       ],
-      ...(overrides.capabilities as Record<string, unknown> ?? {}),
+      ...((overrides.capabilities as Record<string, unknown>) ?? {}),
     },
     runtime: {
       model: "test-model",
-      ...(overrides.runtime as Record<string, unknown> ?? {}),
+      ...((overrides.runtime as Record<string, unknown>) ?? {}),
     },
-    ...(overrides.top as Record<string, unknown> ?? {}),
+    ...((overrides.top as Record<string, unknown>) ?? {}),
   };
   // Simple YAML serialization
   return yamlSerialize(base);
@@ -190,6 +190,12 @@ runtime:
       expect(cap.pricing.currency).toBe("USDC");
     });
 
+    it("accepts subscription pricing models", async () => {
+      const soul = CODING_AGENT_SOUL.replace("model: per_request", "model: subscription");
+      const identity = await runtime.register(soul.replace("name: code-builder", "name: subscription-agent"));
+      expect(identity.capabilities[0]?.pricing.model).toBe("subscription");
+    });
+
     it("parses requirements", async () => {
       const identity = await runtime.register(CODING_AGENT_SOUL);
       expect(identity.requirements).toHaveLength(1);
@@ -302,9 +308,9 @@ identity:
     it("removes the private key so signing fails", async () => {
       await runtime.register(CODING_AGENT_SOUL);
       runtime.deregister("code-builder");
-      await expect(
-        runtime.signPayload("code-builder", "test"),
-      ).rejects.toThrow('No private key for agent "code-builder"');
+      await expect(runtime.signPayload("code-builder", "test")).rejects.toThrow(
+        'No private key for agent "code-builder"',
+      );
     });
   });
 
@@ -319,22 +325,14 @@ identity:
       expect(signature).toBeDefined();
       expect(typeof signature).toBe("string");
 
-      const valid = await runtime.verifySignature(
-        identity.publicKey,
-        payload,
-        signature,
-      );
+      const valid = await runtime.verifySignature(identity.publicKey, payload, signature);
       expect(valid).toBe(true);
     });
 
     it("fails verification with wrong payload", async () => {
       const identity = await runtime.register(CODING_AGENT_SOUL);
       const signature = await runtime.signPayload("code-builder", "original");
-      const valid = await runtime.verifySignature(
-        identity.publicKey,
-        "tampered",
-        signature,
-      );
+      const valid = await runtime.verifySignature(identity.publicKey, "tampered", signature);
       expect(valid).toBe(false);
     });
 
@@ -351,9 +349,9 @@ identity:
     });
 
     it("throws when signing with no private key", async () => {
-      await expect(
-        runtime.signPayload("nonexistent", "test"),
-      ).rejects.toThrow('No private key for agent "nonexistent"');
+      await expect(runtime.signPayload("nonexistent", "test")).rejects.toThrow(
+        'No private key for agent "nonexistent"',
+      );
     });
 
     it("returns false for malformed signatures", async () => {

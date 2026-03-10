@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 
 const PRIVATE_KEY = process.env["DEPLOYER_PRIVATE_KEY"] ?? "0x" + "0".repeat(64);
 const BASE_SEPOLIA_RPC = process.env["BASE_SEPOLIA_RPC"] ?? "https://sepolia.base.org";
+const BASE_MAINNET_RPC = process.env["BASE_MAINNET_RPC"] ?? "https://mainnet.base.org";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -27,6 +28,11 @@ const config: HardhatUserConfig = {
     baseSepolia: {
       url: BASE_SEPOLIA_RPC,
       chainId: 84532,
+      accounts: [PRIVATE_KEY],
+    },
+    baseMainnet: {
+      url: BASE_MAINNET_RPC,
+      chainId: 8453,
       accounts: [PRIVATE_KEY],
     },
   },

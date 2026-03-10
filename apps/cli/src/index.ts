@@ -17,6 +17,7 @@ import { registerSearchCommand } from "./commands/search.js";
 import { registerHireCommand } from "./commands/hire.js";
 import { registerBrokerCommand } from "./commands/broker.js";
 import { registerResearchCommand } from "./commands/research.js";
+import { registerWalletCommand } from "./commands/wallet.js";
 import { loadConfig } from "./config.js";
 import { ContractEngine } from "@clawdia/core";
 
@@ -44,7 +45,9 @@ async function main(): Promise<void> {
   // Create bus
   let bus: IClawBus;
   if (busType === "nats") {
-    bus = new NatsBus();
+    bus = new NatsBus({
+      jetstream: config.nats.jetstream.enabled ? config.nats.jetstream : undefined,
+    });
   } else {
     bus = new InMemoryBus();
   }
@@ -77,6 +80,7 @@ async function main(): Promise<void> {
   registerHireCommand(program, { bus, registry, contracts });
   registerBrokerCommand(program, { bus, registry, contracts });
   registerResearchCommand(program, { bus, registry, contracts });
+  registerWalletCommand(program);
 
   // Connect bus
   if (busType === "nats") {
@@ -86,7 +90,9 @@ async function main(): Promise<void> {
     await bus.connect();
   }
 
-  console.log(chalk.dim(`Bus: ${busType}  Runtime: ${runtimeType}`));
+  const jetStreamSuffix =
+    busType === "nats" && config.nats.jetstream.enabled ? " (JetStream)" : "";
+  console.log(chalk.dim(`Bus: ${busType}${jetStreamSuffix}  Runtime: ${runtimeType}`));
 
   await program.parseAsync(process.argv);
 
