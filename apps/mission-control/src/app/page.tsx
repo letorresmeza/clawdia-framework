@@ -1,187 +1,205 @@
 import Link from "next/link";
 
-const capabilities = [
-  "Identity-bound memory and operator context",
-  "Private control surfaces for agent fleets",
-  "Audit-ready handoffs, contracts, and tasks",
-  "A branded layer between public trust and private execution",
+const principles = [
+  "Persistent identity instead of disposable sessions",
+  "Memory as infrastructure, not prompt residue",
+  "Operator controls with clear public boundaries",
+  "Audit trails, contracts, and durable execution surfaces",
 ];
 
-const pillars = [
+const architecture = [
   {
-    label: "Public Face",
-    title: "Explain the system before you expose it.",
+    label: "Public Narrative",
+    title: "The root domain explains the thesis.",
     body:
-      "The root domain should earn trust. SoulMD positions the product, frames the operating philosophy, and captures demand before anyone sees the admin plane.",
+      "Use soulmd.app to frame the product, articulate why identity and memory matter, and convert interest before anyone touches the control plane.",
   },
   {
-    label: "Private Plane",
-    title: "Keep operations behind a separate surface.",
+    label: "Private Operations",
+    title: "The app surface runs the system.",
     body:
-      "The dashboard belongs on a gated subdomain. That split keeps the product narrative clean and sharply reduces accidental exposure of internal tooling.",
+      "Keep the authenticated dashboard behind /app today, or move it to app.soulmd.app later when you want a harder separation between brand and execution.",
   },
   {
     label: "Memory Layer",
-    title: "Treat context as infrastructure.",
+    title: "Context becomes a governed asset.",
     body:
-      "SoulMD is designed around persistent identity, traceable edits, and operator-grade continuity instead of disposable prompt sessions.",
+      "SoulMD treats continuity, provenance, and task history as system primitives so every operator handoff stays legible and recoverable.",
   },
 ];
 
-const roadmap = [
-  "Launch `soulmd.app` as the public narrative layer.",
-  "Deploy the authenticated dashboard to `app.soulmd.app`.",
-  "Replace shared credentials with user records on SQLite/Postgres.",
-  "Add waitlist, product docs, and operator onboarding flows.",
+const modules = [
+  {
+    title: "Identity-bound memory",
+    body: "Sessions should inherit context, ownership, and prior decisions instead of restarting from zero on every prompt.",
+  },
+  {
+    title: "Operator-grade control",
+    body: "Give teams a deliberate surface for contracts, approvals, tasks, and fleet state rather than a chat box pretending to be software.",
+  },
+  {
+    title: "Public trust layer",
+    body: "The homepage should be legible to buyers, partners, and operators who need a product argument before they need a login.",
+  },
+];
+
+const rollout = [
+  "Point soulmd.app at this landing page and keep the CTA aimed at /app.",
+  "Verify the production environment variables still power the authenticated Mission Control routes.",
+  "Once the product shape hardens, optionally assign app.soulmd.app to the same project or a dedicated dashboard deployment.",
+  "Add waitlist capture, docs, and product proof without diluting the boundary between marketing and execution.",
 ];
 
 export default function HomePage() {
   return (
-    <main className="landing-page">
-      <section className="landing-shell">
-        <div className="landing-noise" />
-
-        <header className="topbar">
-          <div className="brand-lockup">
-            <span className="brand-mark">SM</span>
+    <main className="sm-page">
+      <div className="sm-atmosphere" />
+      <section className="sm-shell">
+        <header className="sm-topbar">
+          <div className="sm-brand">
+            <span className="sm-brand-mark">SM</span>
             <div>
-              <p className="brand-name">SoulMD</p>
-              <p className="brand-subtitle">Identity, memory, and control for AI operators</p>
+              <p className="sm-brand-name">SoulMD</p>
+              <p className="sm-brand-subtitle">Memory infrastructure for AI operators</p>
             </div>
           </div>
 
-          <nav className="topnav">
+          <nav className="sm-nav">
             <a href="#architecture">Architecture</a>
-            <a href="#positioning">Positioning</a>
-            <a href="#roadmap">Roadmap</a>
-            <Link href="/app" className="topnav-cta">
-              Open app
+            <a href="#modules">Modules</a>
+            <a href="#rollout">Rollout</a>
+            <Link href="/app" className="sm-nav-cta">
+              Open Mission Control
             </Link>
           </nav>
         </header>
 
-        <section className="landing-hero">
-          <div className="hero-stack">
-            <p className="landing-kicker">soulmd.app should sell the idea. `app.soulmd.app` should run it.</p>
-            <h1>
-              Build the public myth
+        <section className="sm-hero">
+          <div className="sm-hero-copy">
+            <p className="sm-kicker">The root domain should sell the operating model.</p>
+            <h1 className="sm-title">
+              Memory for the machines,
               <br />
-              and keep the
-              <br />
-              machine private.
+              control for the humans.
             </h1>
-            <p className="landing-copy">
-              SoulMD is the brand surface for an operator-grade AI system: a place
-              to explain memory, identity, and orchestration without exposing the
-              raw control plane. The domain architecture should make that distinction
-              obvious from the first visit.
+            <p className="sm-lede">
+              SoulMD is the public-facing thesis for a private operating system:
+              a product layer built around identity, durable context, and measured
+              execution. The homepage should make the promise clear before the
+              dashboard ever asks for trust.
             </p>
 
-            <div className="landing-actions">
-              <Link href="/app" className="landing-button landing-button-primary">
+            <div className="sm-actions">
+              <Link href="/app" className="sm-button sm-button-primary">
                 Enter Mission Control
               </Link>
-              <a href="#architecture" className="landing-button">
-                See domain structure
+              <a href="#architecture" className="sm-button">
+                View domain architecture
               </a>
             </div>
 
-            <div className="signal-strip">
-              {capabilities.map((item) => (
+            <div className="sm-principles">
+              {principles.map((item) => (
                 <span key={item}>{item}</span>
               ))}
             </div>
           </div>
 
-          <aside className="hero-card">
-            <div className="hero-card-label">Domain split</div>
-            <div className="hero-card-grid">
+          <aside className="sm-hero-panel">
+            <div className="sm-panel-label">Recommended split</div>
+            <div className="sm-panel-stack">
               <article>
-                <span>Root</span>
-                <strong>`soulmd.app`</strong>
-                <p>Public landing page, narrative, demand capture, docs entry.</p>
+                <span>Root domain</span>
+                <strong>soulmd.app</strong>
+                <p>Positioning, proof, demand capture, and the product argument.</p>
               </article>
               <article>
-                <span>App</span>
-                <strong>`app.soulmd.app`</strong>
-                <p>Authenticated dashboard, private ops surface, mutable system state.</p>
+                <span>App route</span>
+                <strong>soulmd.app/app</strong>
+                <p>Authenticated Mission Control for contracts, agents, tasks, and system state.</p>
               </article>
             </div>
-            <div className="hero-card-foot">
+            <div className="sm-panel-quote">
               <p>Remembered impression</p>
-              <strong>Not another AI toy. An operating identity.</strong>
+              <strong>Not another AI toy. A governed operating identity.</strong>
             </div>
           </aside>
         </section>
 
-        <section id="architecture" className="architecture-band">
-          <div className="section-heading">
-            <p className="landing-kicker">Recommended architecture</p>
-            <h2>Separate trust from execution.</h2>
+        <section id="architecture" className="sm-band">
+          <div className="sm-section-head">
+            <p className="sm-kicker">Architecture</p>
+            <h2>Separate public trust from private execution.</h2>
           </div>
 
-          <div className="architecture-grid">
-            <article className="architecture-card architecture-card-root">
-              <span>01</span>
-              <h3>soulmd.app</h3>
-              <p>Landing page, positioning, waitlist, onboarding narrative, conversion path.</p>
-            </article>
-            <article className="architecture-card architecture-card-app">
-              <span>02</span>
-              <h3>app.soulmd.app</h3>
-              <p>Authenticated control surface with audit trails, contracts, tasks, and operators.</p>
-            </article>
-            <article className="architecture-card architecture-card-later">
-              <span>03</span>
-              <h3>api/docs later</h3>
-              <p>Add `api.` and `docs.` only after the product shape and workflow boundaries solidify.</p>
-            </article>
+          <div className="sm-architecture-grid">
+            {architecture.map((item, index) => (
+              <article key={item.title} className="sm-architecture-card">
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{item.label}</h3>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </article>
+            ))}
           </div>
         </section>
 
-        <section id="positioning" className="pillars-grid">
-          {pillars.map((pillar) => (
-            <article key={pillar.title} className="pillar-card">
-              <p>{pillar.label}</p>
-              <h3>{pillar.title}</h3>
-              <span>{pillar.body}</span>
+        <section className="sm-manifest">
+          <div className="sm-manifest-mark">SoulMD</div>
+          <div className="sm-manifest-copy">
+            <p className="sm-kicker">Product thesis</p>
+            <h2>The homepage should explain why memory matters before the operator ever logs in.</h2>
+            <p>
+              Buyers do not need an admin panel preview. They need a clear position
+              on identity, continuity, and controlled automation. The public page
+              exists to state that position with confidence.
+            </p>
+            <p>
+              Mission Control stays available behind <code>/app</code>, but the root
+              domain remains a sharper instrument: a place to frame the category,
+              earn trust, and tell the story cleanly.
+            </p>
+          </div>
+        </section>
+
+        <section id="modules" className="sm-modules">
+          {modules.map((item) => (
+            <article key={item.title} className="sm-module-card">
+              <p className="sm-kicker">Module</p>
+              <h3>{item.title}</h3>
+              <span>{item.body}</span>
             </article>
           ))}
         </section>
 
-        <section className="manifest-panel">
-          <div>
-            <p className="landing-kicker">What the homepage should do</p>
-            <h2>Frame the system in human terms.</h2>
-          </div>
-          <div className="manifest-copy">
-            <p>
-              The homepage should not feel like an admin panel preview. It should
-              feel like a confident thesis: why memory matters, why identity matters,
-              and why operator-grade AI needs a durable surface instead of another
-              disposable chat box.
-            </p>
-            <p>
-              When someone lands on SoulMD, they should understand the split
-              immediately: the public domain is for meaning and conversion; the app
-              domain is where the system actually runs.
-            </p>
-          </div>
-        </section>
-
-        <section id="roadmap" className="roadmap-panel">
-          <div className="section-heading">
-            <p className="landing-kicker">Rollout order</p>
-            <h2>Ship the brand first, then the gate.</h2>
+        <section id="rollout" className="sm-band">
+          <div className="sm-section-head">
+            <p className="sm-kicker">Rollout order</p>
+            <h2>Connect the brand first, then harden the app boundary.</h2>
           </div>
 
-          <div className="roadmap-list">
-            {roadmap.map((item, index) => (
-              <article key={item} className="roadmap-step">
+          <div className="sm-rollout">
+            {rollout.map((item, index) => (
+              <article key={item} className="sm-rollout-step">
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <p>{item}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="sm-footer-card">
+          <div>
+            <p className="sm-kicker">Deploy posture</p>
+            <h2>soulmd.app should feel inevitable, not improvised.</h2>
+          </div>
+          <div className="sm-footer-actions">
+            <Link href="/app" className="sm-button sm-button-primary">
+              Go to the app
+            </Link>
+            <a href="#rollout" className="sm-button">
+              Domain checklist
+            </a>
           </div>
         </section>
       </section>
