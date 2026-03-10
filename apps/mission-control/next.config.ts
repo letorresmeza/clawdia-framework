@@ -1,9 +1,10 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
   turbopack: {
-    root: __dirname,
+    root: path.join(__dirname, "../.."),
   },
 };
 

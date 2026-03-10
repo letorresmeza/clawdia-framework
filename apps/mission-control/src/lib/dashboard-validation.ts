@@ -17,16 +17,17 @@ type ValidationResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: string };
 
-type Auditless<T> = Omit<T, keyof AuditFields>;
+type CreatePayload<T> = Omit<T, keyof AuditFields | "id"> & { id?: string };
+type UpdatePayload<T> = Partial<Omit<T, keyof AuditFields | "id">>;
 
-export type CreateAgentInput = Auditless<Agent> & { id?: string };
-export type UpdateAgentInput = Partial<Auditless<Agent>>;
-export type CreateTaskInput = Auditless<TaskItem> & { id?: string };
-export type UpdateTaskInput = Partial<Auditless<TaskItem>>;
-export type CreateEventInput = Auditless<EventItem> & { id?: string };
-export type UpdateEventInput = Partial<Auditless<EventItem>>;
-export type CreateContractInput = Auditless<Contract> & { id?: string };
-export type UpdateContractInput = Partial<Auditless<Contract>>;
+export type CreateAgentInput = CreatePayload<Agent>;
+export type UpdateAgentInput = UpdatePayload<Agent>;
+export type CreateTaskInput = CreatePayload<TaskItem>;
+export type UpdateTaskInput = UpdatePayload<TaskItem>;
+export type CreateEventInput = CreatePayload<EventItem>;
+export type UpdateEventInput = UpdatePayload<EventItem>;
+export type CreateContractInput = CreatePayload<Contract>;
+export type UpdateContractInput = UpdatePayload<Contract>;
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -92,7 +93,7 @@ function validateAgentLike(value: unknown): ValidationResult<CreateAgentInput> {
   return {
     ok: true,
     value: {
-      id: isNonEmptyString(candidate.id) ? candidate.id : undefined,
+      ...(isNonEmptyString(candidate.id) ? { id: candidate.id } : {}),
       name: candidate.name,
       role: candidate.role,
       status: candidate.status,
@@ -212,7 +213,7 @@ function validateTaskLike(value: unknown): ValidationResult<CreateTaskInput> {
   return {
     ok: true,
     value: {
-      id: isNonEmptyString(candidate.id) ? candidate.id : undefined,
+      ...(isNonEmptyString(candidate.id) ? { id: candidate.id } : {}),
       label: candidate.label,
       owner: candidate.owner,
       state: candidate.state,
@@ -265,7 +266,7 @@ function validateEventLike(value: unknown): ValidationResult<CreateEventInput> {
   return {
     ok: true,
     value: {
-      id: isNonEmptyString(candidate.id) ? candidate.id : undefined,
+      ...(isNonEmptyString(candidate.id) ? { id: candidate.id } : {}),
       time: candidate.time,
       title: candidate.title,
       detail: candidate.detail,
@@ -320,7 +321,7 @@ function validateContractLike(value: unknown): ValidationResult<CreateContractIn
   return {
     ok: true,
     value: {
-      id: isNonEmptyString(candidate.id) ? candidate.id : undefined,
+      ...(isNonEmptyString(candidate.id) ? { id: candidate.id } : {}),
       team: candidate.team,
       count: candidate.count,
       description: candidate.description,

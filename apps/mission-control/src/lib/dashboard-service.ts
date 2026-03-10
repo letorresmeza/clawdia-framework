@@ -1,5 +1,6 @@
 import {
   type Agent,
+  type AuditFields,
   type Contract,
   type EventItem,
   type TaskItem,
@@ -21,10 +22,10 @@ type MutationOptions = {
   actor: string;
 };
 
-function stampCreate<T extends { createdAt: string; updatedAt: string; createdBy: string; updatedBy: string }>(
+function stampCreate<T extends object>(
   item: T,
   actor: string
-) {
+): T & AuditFields {
   const now = new Date().toISOString();
   return {
     ...item,
