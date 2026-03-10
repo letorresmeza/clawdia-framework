@@ -4,9 +4,9 @@ import { fetchContracts, fetchRegistryEntries } from "@/lib/daemon-client";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request?: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const tenant = request?.nextUrl.searchParams.get("tenant");
+    const tenant = request.nextUrl.searchParams.get("tenant");
     const [allContracts, registryEntries] = await Promise.all([
       fetchContracts(),
       fetchRegistryEntries(),

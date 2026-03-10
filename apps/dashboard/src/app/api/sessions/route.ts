@@ -6,8 +6,8 @@ import type { AgentSession } from "@clawdia/types";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request?: NextRequest): Promise<NextResponse<SessionsResponse>> {
-  const tenant = request?.nextUrl.searchParams.get("tenant");
+export async function GET(request: NextRequest): Promise<NextResponse<SessionsResponse>> {
+  const tenant = request.nextUrl.searchParams.get("tenant");
   const sessions = (await fetchDaemonJson<AgentSession[]>("/api/sessions")).filter((session) =>
     tenant ? session.identity.operator === tenant : true,
   );

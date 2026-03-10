@@ -5,8 +5,8 @@ import type { RegistryResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request?: NextRequest): Promise<NextResponse<RegistryResponse>> {
-  const tenant = request?.nextUrl.searchParams.get("tenant");
+export async function GET(request: NextRequest): Promise<NextResponse<RegistryResponse>> {
+  const tenant = request.nextUrl.searchParams.get("tenant");
   const entries = (await fetchRegistryEntries()).filter((entry) =>
     tenant ? entry.identity.operator === tenant : true,
   );

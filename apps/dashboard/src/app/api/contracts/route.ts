@@ -6,9 +6,9 @@ import type { ContractsResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request?: NextRequest): Promise<NextResponse<ContractsResponse>> {
-  const state = request?.nextUrl.searchParams.get("state") as ContractState | null;
-  const tenant = request?.nextUrl.searchParams.get("tenant");
+export async function GET(request: NextRequest): Promise<NextResponse<ContractsResponse>> {
+  const state = request.nextUrl.searchParams.get("state") as ContractState | null;
+  const tenant = request.nextUrl.searchParams.get("tenant");
   const contracts = await fetchContracts();
   const tenantContracts = contracts.filter((contract) =>
     tenant
